@@ -1,0 +1,8 @@
+{
+    "strings":[
+        "Bonjour ESA Team",
+        "Bonjour World"
+    ],
+    "oldvalue": "Bonjour",
+    "newvalue": "Hello"
+}
