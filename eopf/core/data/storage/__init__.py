@@ -2,17 +2,16 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import shutil
 from tempfile import mkdtemp
-from codecs import StreamReaderWriter
 import os.path
 from dataclasses import dataclass
 from typing import Any, Dict, IO, List, Optional, Union
-
 
 
 @dataclass
 class BasicAuthentication:
     """BasicAuthentication is used to connect services using a username/password pair (LDAP, SQL Database, ...)
     """
+
     username: str
     password: str
 
@@ -21,6 +20,7 @@ class BasicAuthentication:
 class AuthenticationByToken:
     """AuthenticationByToken is used to connect services using authentication token (OpenID, OAuth2, Kerberos...)
     """
+
     token: str
 
 
@@ -30,15 +30,21 @@ Credentials = Union[BasicAuthentication, AuthenticationByToken]
 - AuthenticationByToken: to connect services using authentication token (OpenID, OAuth2, Kerberos...)
 """
 
+
 class StorageAPI(ABC):
     """StorageAPI is an abstract class defining the methods for interacting with the EOPF external storages
     """
-    def __init__(self, service_url: str, credentials: Optional[Credentials] = None) -> None:
+
+    def __init__(
+        self, service_url: str, credentials: Optional[Credentials] = None
+    ) -> None:
         self.service_url = service_url
         self.credentials = credentials
 
-    def copyto(self, source_path: str, storage: StorageAPI, destination_path: str) -> None:
-        """copyto copies a file or a directory from a storage to another 
+    def copyto(
+        self, source_path: str, storage: StorageAPI, destination_path: str
+    ) -> None:
+        """copyto copies a file or a directory from a storage to another
         This method is not abstract, this naïve implementation is provided as an exemple to be optimized
         :param source_path: source path in self Storage
         :type source_path: str
@@ -52,7 +58,6 @@ class StorageAPI(ABC):
         self.download(source_path, tmp)
         storage.upload(os.path.join(tmp, tail), destination_path)
         shutil.rmtree(tmp)
-        
 
     @abstractmethod
     def download(self, remote_path: str, local_path: str) -> None:
@@ -63,7 +68,7 @@ class StorageAPI(ABC):
         :param local_path: a path in the local file system
         :type local_path: str
         """
-    
+
     @abstractmethod
     def upload(self, local_path: str, remote_path: str) -> None:
         """[summary]
@@ -118,7 +123,6 @@ class StorageAPI(ABC):
     def tree(self, remote_dir: str) -> Dict[str, Any]:
         """tree returns the remote_dir file and directory tree.
         This method is not abstract, this naïve implementation is provided as an exemple to be optimized
-       
         :param remote_dir: the path of the remote resource
         :type remote_dir: str
         :return: the remote_dir file and directory tree store in a dict like the following
@@ -138,8 +142,6 @@ class StorageAPI(ABC):
             if self.is_dir(entry):
                 result[entry] = self.tree(os.path.join(remote_dir, entry))
         return result
-    
-
 
     @abstractmethod
     def mkdir(self, remote_path: str):
@@ -157,7 +159,9 @@ class StorageAPI(ABC):
         :type remote_path: str
         """
 
-    def open(self, remote_file: str, mode: str = 'r', encoding: str = "None") -> IO[Any]:
+    def open(
+        self, remote_file: str, mode: str = "r", encoding: str = "None"
+    ) -> IO[Any]:
         """Open an encoded file using the given mode and return an instance of StreamReaderWriter, providing transparent encoding/decoding
          This method is not abstract, this naïve implementation is provided as an exemple to be optimized
 
@@ -169,16 +173,15 @@ class StorageAPI(ABC):
         :type encoding: str, optional
         :return: a Python file object like
         :rtype: StreamReaderWriter
-        """       
+        """
         tmp = mkdtemp()
         basename = os.path.basename(remote_file)
         self.download(remote_file, tmp)
         srw = open(os.path.join(tmp, basename), mode=mode, encoding=encoding)
+
         def close_delete(self) -> None:
             shutil.rmtree(tmp)
             self.close()
-        setattr(srw.__class__, 'close', close_delete)
-        return srw
-        
 
-    
+        setattr(srw.__class__, "close", close_delete)
+        return srw

@@ -1,4 +1,4 @@
-from eopf.core.computing.pool import MultiProcessingPool, RayPool
+from eopf.core.computing.pool import LocalCluster, RayPool
 from eopf.algorithms import ProcessingContext
 import json
 import sys
@@ -36,8 +36,8 @@ def schema(algorithm):
         d["output"] = algo.output_class().json_schema()
         json.dump(d, sys.stdout)
     else:
-        print(f"Error: {algorithm} does not exits", file=sys.stderr)
-        print(f"Use list command to find available algorithms", file=sys.stderr)
+        print("Error: {algorithm} does not exits", file=sys.stderr)
+        print("Use list command to find available algorithms", file=sys.stderr)
         exit(1)
 
 
@@ -54,8 +54,8 @@ def describe(algorithm):
         algo = registry.algorithms[algorithm]
         print(algo.__doc__)
     else:
-        print(f"Error: {algorithm} does not exits", file=sys.stderr)
-        print(f"Use list command to find available algorithms", file=sys.stderr)
+        print("Error: {algorithm} does not exits", file=sys.stderr)
+        print("Use list command to find available algorithms", file=sys.stderr)
         exit(1)
 
 
@@ -88,17 +88,17 @@ def run(algorithm, input_file, output_file, use_ray):
                 if use_ray:
                     context = ProcessingContext(RayPool(), None)
                 else:
-                    context = ProcessingContext(MultiProcessingPool(), None)
+                    context = ProcessingContext(LocalCluster(), None)
                 output = algo(context)(param)
                 jsoutout = output.to_json()
                 with open(output_file, "w") as fo:
                     fo.write(jsoutout)
         else:
             print(f"Error: {algorithm} does not exits", file=sys.stderr)
-            print(f"Use list command to find available algorithms", file=sys.stderr)
+            print("Use list command to find available algorithms", file=sys.stderr)
             exit(1)
 
-    except BaseException as e:
+    except BaseException:
         print(f"An exception occurs running {algorithm} algorithm:", file=sys.stderr)
         print_exc(file=sys.stderr)
         exit(2)

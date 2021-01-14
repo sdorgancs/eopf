@@ -9,86 +9,113 @@ from eopf.core.production.triggering import expose
 @config
 class SeparatorConfig:
     """SeparatorConfig is a configuration object that contains a string separator"""
-    separator : str
-    
+
+    separator: str
+
 
 @dataclass
 class ConcatInput(Parameter):
     """ConcatInput is the input parameter of the Concat algorithm"""
 
-    strings : List[List[str]]
+    strings: List[List[str]]
     """A list where elements are lists of string, each element of the list is concatenated using a separator"""
 
     def validate(self) -> ParameterValidationResult:
         if self.strings is None:
-            return ParameterValidationResult(False, [f"Parameter ConcatInput.strings cannot be null"])
+            return ParameterValidationResult(
+                False, ["Parameter ConcatInput.strings cannot be null"]
+            )
         if len(self.strings) <= 0:
-            return ParameterValidationResult(False, [f"Parameter ConcatInput.strings cannot be empty"])
+            return ParameterValidationResult(
+                False, ["Parameter ConcatInput.strings cannot be empty"]
+            )
         return ParameterValidationResult(True)
-    
+
 
 @dataclass
 class ConcatOutput(Parameter):
     """ConcatOutput is the output parameter of the Concat algorithm"""
 
-    results : List[str]
+    results: List[str]
     """The list of concatenated strings"""
+
     def validate(self) -> ParameterValidationResult:
         if self.results is None:
-            return ParameterValidationResult(False, [f"Parameter ConcatOutput.results cannot be null"])
+            return ParameterValidationResult(
+                False, ["Parameter ConcatOutput.results cannot be null"]
+            )
         if len(self.results) <= 0:
-            return ParameterValidationResult(False, [f"Parameter ConcatOutput.results cannot be empty"])
+            return ParameterValidationResult(
+                False, ["Parameter ConcatOutput.results cannot be empty"]
+            )
         return ParameterValidationResult(True)
 
+
 @expose
-class Concat(Algorithm[SeparatorConfig, ConcatInput, ConcatOutput]): 
-    """Concat alorithm take a list in parameter, each element is a list of string which is concatenated"""       
+class Concat(Algorithm[SeparatorConfig, ConcatInput, ConcatOutput]):
+    """Concat alorithm take a list in parameter, each element is a list of string which is concatenated"""
+
     def call(self, param: ConcatInput) -> ConcatOutput:
         self.context.logger.debug("Concat starts")
         # read the separator from the configuration (~/.eopf/config/eopf/algorithms/common/string/Concat.toml)
         sep = self.configuration.separator
-        # parallize the concatenation tasks using the resource Pool given by the master process 
+        # parallize the concatenation tasks using the resource Pool given by the master process
         results = self.context.pool.map(sep.join, param.strings)
         self.context.logger.debug("Concat ends")
         return ConcatOutput(results)
+
 
 @dataclass
 class SplitInput(Parameter):
     """SplitInput is the input parameter of the Split algorithm"""
 
-    strings : List[str]
+    strings: List[str]
     """The list of string to be splitted"""
 
     def validate(self) -> ParameterValidationResult:
         if self.strings is None:
-            return ParameterValidationResult(False, [f"Parameter SplitInput.strings cannot be null"])
+            return ParameterValidationResult(
+                False, ["Parameter SplitInput.strings cannot be null"]
+            )
         if len(self.strings) <= 0:
-            return ParameterValidationResult(False, [f"Parameter SplitInput.strings cannot be empty"])
-        return ParameterValidationResult(True)   
+            return ParameterValidationResult(
+                False, ["Parameter SplitInput.strings cannot be empty"]
+            )
+        return ParameterValidationResult(True)
+
 
 @dataclass
 class SplitOutput(Parameter):
     """SplitOutput is the input parameter of the Split algorithm"""
-    results : List[List[str]]
+
+    results: List[List[str]]
     """ a list where each element is a list of string producr by the Split algorithm"""
 
     def validate(self) -> ParameterValidationResult:
         if self.results is None:
-            return ParameterValidationResult(False, [f"Parameter SplitOutput.results cannot be null"])
+            return ParameterValidationResult(
+                False, ["Parameter SplitOutput.results cannot be null"]
+            )
         if len(self.results) <= 0:
-            return ParameterValidationResult(False, [f"Parameter SplitOutput.results cannot be empty"])
+            return ParameterValidationResult(
+                False, ["Parameter SplitOutput.results cannot be empty"]
+            )
         return ParameterValidationResult(True)
+
 
 @expose
 class Split(Algorithm[SeparatorConfig, SplitInput, SplitOutput]):
     """Split algorithm take a list of string in input and split them"""
+
     def call(self, param: SplitInput) -> SplitOutput:
         self.context.logger.debug("Split starts")
         # read the separator from the configuration (~/.eopf/config/eopf/algorithms/common/string/Split.toml)
         sep = self.configuration.separator
+
         def split(original: str) -> List[str]:
             return original.split(sep)
-        # parallize the split tasks using the resource Pool given by the master process 
+
+        # parallize the split tasks using the resource Pool given by the master process
         results = self.context.pool.map(split, param.strings)
         self.context.logger.debug("Split ends")
         return SplitOutput(results)
@@ -98,7 +125,7 @@ class Split(Algorithm[SeparatorConfig, SplitInput, SplitOutput]):
 class ReplaceInput(Parameter):
     """ReplaceInput is the input parameter of the Replace algorithm"""
 
-    strings : List[str]
+    strings: List[str]
     """The list of string to be replaced"""
     oldvalue: str
     """the value to replace"""
@@ -108,9 +135,7 @@ class ReplaceInput(Parameter):
     """the maximum number of occurences to replace by string"""
 
     def is_valid(self) -> bool:
-        return (not self.strings is None) \
-            and (len(self.strings) > 0) \
-            and (len(self.oldvalue) > 0)
+        return ((self.strings is not None) and (len(self.strings) > 0) and (len(self.oldvalue) > 0))
 
     def validate(self) -> ParameterValidationResult:
         reasons = []
@@ -126,18 +151,23 @@ class ReplaceInput(Parameter):
             reasons.append("Parameter ReplaceInput.newvalue cannot be null")
         return ParameterValidationResult(len(reasons) == 0, reasons)
 
+
 @dataclass
 class ReplaceOutput(Parameter):
-    """ReplaceOutput is the input parameter of the Replace algorithm"""    
+    """ReplaceOutput is the input parameter of the Replace algorithm"""
 
-    results : List[str]
+    results: List[str]
     """A list of string where input.olvalue have been replaced by input.newvalue"""
 
     def validate(self) -> ParameterValidationResult:
         if self.results is None:
-            return ParameterValidationResult(False, [f"Parameter ReplaceOutput.results cannot be null"])
+            return ParameterValidationResult(
+                False, ["Parameter ReplaceOutput.results cannot be null"]
+            )
         if len(self.results) <= 0:
-            return ParameterValidationResult(False, [f"Parameter ReplaceOutput.results cannot be empty"])
+            return ParameterValidationResult(
+                False, ["Parameter ReplaceOutput.results cannot be empty"]
+            )
         return ParameterValidationResult(True)
 
 
@@ -147,14 +177,16 @@ class Replace(Algorithm[None, ReplaceInput, ReplaceOutput]):
 
     def call(self, param: ReplaceInput) -> ReplaceOutput:
         self.context.logger.debug("Replace starts")
+
         def replace(original: str):
             if param.maxreplace is None:
                 return original.replace(param.oldvalue, param.newvalue)
             else:
-                return original.replace(param.oldvalue, param.newvalue, param.maxreplace)
-        # parallize the replace tasks using the resource Pool given by the master process 
+                return original.replace(
+                    param.oldvalue, param.newvalue, param.maxreplace
+                )
+
+        # parallize the replace tasks using the resource Pool given by the master process
         results = self.context.pool.map(replace, param.strings)
         self.context.logger.debug("Replace ends")
         return ReplaceOutput(results)
-        
-

@@ -1,11 +1,11 @@
-from dataclasses import dataclass, field
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from logging import Logger
 from typing import Generic, List, Optional, Type, TypeVar, get_args
 
 from dataclasses_jsonschema import JsonSchemaMixin
-from eopf.core.computing.pool import PoolAPI, RayPool
+from eopf.core.computing.pool import PoolAPI
 from eopf.core.production import configuration
 
 
@@ -13,8 +13,9 @@ from eopf.core.production import configuration
 class ParameterValidationResult:
     """Parameters validation result"""
 
-    is_ok : bool
-    reasons : List[str] = field(default_factory=list)
+    is_ok: bool
+    reasons: List[str] = field(default_factory=list)
+
 
 class Parameter(ABC, JsonSchemaMixin):
     """Base abstract class for Algorithm input and output parameters"""
@@ -27,25 +28,30 @@ class Parameter(ABC, JsonSchemaMixin):
         :rtype: bool
         """
 
+
 class InvalidParameter(Exception):
     """Base exception to raise when a parameter is invalid"""
 
     def __init__(self, reasons: List[str]) -> None:
         super().__init__()
-        self.reasons : List[str] = reasons
+        self.reasons: List[str] = reasons
 
     def __str__(self) -> str:
-        msg = '\n\t- '.join(self.reasons)
+        msg = "\n\t- ".join(self.reasons)
         return f"\n\t- {msg}"
+
 
 class InvalidInputParameter(InvalidParameter):
     """Exception raised when an input parameter is invalid"""
 
+
 class InvalidOutputParameter(InvalidParameter):
     """Exception raised when an output parameter is invalid"""
 
+
 class InvalidConfigurationParameter(InvalidParameter):
     """Exception raised when a configuration parameter is invalid"""
+
 
 Configuration = TypeVar("Configuration")
 """Generic Algorithm configuration parameters"""
@@ -83,7 +89,6 @@ class ProcessingContext:
         return self._logger
 
 
-
 class Algorithm(Generic[Configuration, Input, Output], ABC):
     """Algorithm is a generic abstract class that defines and eopf Algorithm. From the user point of view an Algorithm is a Callable[[Input], Output]).
     Errors are handled by exception, the master process calling the algorithm is responsible for handling exceptions.
@@ -94,7 +99,7 @@ class Algorithm(Generic[Configuration, Input, Output], ABC):
     :type Generic[Configuration]: a valid Configuration concrete class is a Python class decorated using @eopf.production.configuration.config
     :param Callable[[Input], Output]): Algorithm is a Callable that has to provide a methode __call__(param: Input) -> Output.
     :type Callable[[Input], Output]): Valid Input and Output concrete classes are Python dataclass that inherits from eopf.production.triggering.Parameter
-    """     
+    """
 
     def __init__(self, context: ProcessingContext) -> None:
         """Algorithm constructor
@@ -105,9 +110,10 @@ class Algorithm(Generic[Configuration, Input, Output], ABC):
         self.context: ProcessingContext = context
         if self.context.logger is None:
             self.context.logger = logging.getLogger(self.name())
-        if self.configuration_class() != type(None):
+        if self.configuration_class() is not None:
             self.configuration = configuration.get(
-                self.configuration_class(), self.name())
+                self.configuration_class(), self.name()
+            )
 
     @abstractmethod
     def call(self, param: Input) -> Output:
@@ -121,7 +127,7 @@ class Algorithm(Generic[Configuration, Input, Output], ABC):
         """
 
     def __call__(self, param: Input) -> Output:
-        """Algorithms are callable objects, this methods wraps call method to validate input and output parameters 
+        """Algorithms are callable objects, this methods wraps call method to validate input and output parameters
 
         :param param: an object storing the input parameters of the Algorithm
         :type param: Input
@@ -150,7 +156,7 @@ class Algorithm(Generic[Configuration, Input, Output], ABC):
         :type clazz: Type[Algorithm]
         :return: the fully qualified name of the concrete Algorithm implementation
         :rtype: str
-        """        
+        """
         return ".".join([clazz.__module__, clazz.__name__])
 
     @classmethod

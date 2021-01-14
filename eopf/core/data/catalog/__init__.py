@@ -2,13 +2,14 @@ from dataclasses import dataclass
 from enum import Enum
 from eopf.core.data.storage import Credentials
 from typing import Any, Dict, List, Optional
-import geojson # type: ignore
+import geojson  # type: ignore
 from abc import ABC, abstractmethod
 
 
 class Geometry(geojson.GeoJSON):
     """Defines a Geometry
     """
+
 
 class Feature(geojson.Feature):
     """A Feature object represents a spatially bounded asset:
@@ -28,27 +29,32 @@ class FeatureCollection(geojson.FeatureCollection):
     def __init__(self, features: List[Feature]):
         super().__init__(features)
 
+
 @dataclass
 class FeatureCollectionDescription:
     """FeatureCollectionDescription contains the name of the feature collection and its description
     """
+
     name: str
-    description : str
+    description: str
 
 
 class FeaturePropertyTransformation(ABC):
     """FeaturePropertyTransformation is an abstract class from which all Feature property transformation types must inherit
     """
 
+
 class Predicate(ABC):
     """Predicate is an abstract class from which all concrete predicates must inherit
     """
 
+
 @dataclass
 class FeaturePropertyPredicate(Predicate):
     """FeaturePropertyPredicate is an abstract class from which all Feature property predicates types must inherit
-    Functionaly a FeaturePropertyPredicate is equivalent to Predicate(Transform(property.value)) 
+    Functionaly a FeaturePropertyPredicate is equivalent to Predicate(Transform(property.value))
     """
+
     property_name: str
     """Name of the property to test
     """
@@ -61,14 +67,17 @@ class FeaturePropertyPredicate(Predicate):
 class FeaturePropertyFilter:
     """FeaturePropertyFilter is used in SearchRequest to define filters that must applied to Feature properties
     """
+
     predicates: List[FeaturePropertyPredicate]
     """List of predicates to apply the the transformed value used to filter features
     """
+
 
 class GeometricOperator(Enum):
     IS_INSIDE = 0
     CONTAINS = 1
     INTERSECTS = 2
+
 
 @dataclass
 class GeometryPredicate(Predicate):
@@ -79,8 +88,10 @@ class GeometryPredicate(Predicate):
         else:
             return (feature.geometry operator geometry)
     """
+
     operator: GeometricOperator
     geometry: Geometry
+
 
 @dataclass
 class GeometricFilter:
@@ -90,6 +101,7 @@ class GeometricFilter:
 class OrderType(Enum):
     """OrderType allows choosing if features are ordered in ascending order or in descending order
     """
+
     ASC = 0
     DSC = 1
 
@@ -98,6 +110,7 @@ class OrderType(Enum):
 class OrderByOption:
     """OrderByOption is used by SearchRequest to order Feature of the selected FeatureCollection
     """
+
     property_name: str
     direction: OrderType
 
@@ -106,6 +119,7 @@ class OrderByOption:
 class TopOption:
     """TopOption is used by SearchRequest to keep only the first 'top' Features of the selected FeatureCollection
     """
+
     top: int
 
 
@@ -113,6 +127,7 @@ class TopOption:
 class SkipOption:
     """SkipOption is used by SearchRequest skip the first 'skip' Features of the selected FeatureCollection
     """
+
     skip: int
 
 
@@ -125,9 +140,9 @@ class SearchRequest:
     feature_collection_name: str
     """feature_collection_name is the name of the feature collection in where features are searched
     """
-    feature_id : Optional[str] = None
+    feature_id: Optional[str] = None
     """feature_id is the identifier of the feature
-    """    
+    """
     properties_filter: Optional[FeaturePropertyFilter] = None
     """properties_filter is used to select features in the feature collection applying predicates to properties values
     A feature is selected if all predicate are validated
@@ -147,26 +162,29 @@ class SearchRequest:
 
 
 @dataclass
-class UpdateRequest():
+class UpdateRequest:
     """UpdateRequest is used to add a Feature to a FeatureCollection
     """
+
     feature_collection_name: str
     feature_id: str
     feature: Feature
 
 
 @dataclass
-class AddRequest():
+class AddRequest:
     """RemoveRequest is used to add a Feature to a FeatureCollection
     """
+
     feature_collection_name: str
     feature: Feature
 
 
 @dataclass
-class DeleteRequest():
+class DeleteRequest:
     """RemoveRequest is used to remove Features that match search_request
     """
+
     search_request: SearchRequest
 
 
@@ -185,7 +203,7 @@ class ClientAPI(ABC):
         super().__init__()
         self.service_url: str = service_url
         self.credentials: Credentials = credentials
-    
+
     @abstractmethod
     def list_collections(self) -> List[FeatureCollectionDescription]:
         """Returns The list of descriptions of the feature collections that are made available by the service addressed
@@ -228,7 +246,7 @@ class ClientAPI(ABC):
 
     @abstractmethod
     def add(self, request: AddRequest) -> Feature:
-        """Adds a new feature into a feature collection 
+        """Adds a new feature into a feature collection
 
         :param request: contains the new Feature
         :type request: AddRequest

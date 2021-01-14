@@ -16,11 +16,13 @@ def config_file_name(afqn: str) -> str:
     :rtype: str
     """
     p = afqn.replace(".", "/")
-    return f'{Path.home()}/.eopf/config/{p}.toml'
+    return f"{Path.home()}/.eopf/config/{p}.toml"
+
 
 T = TypeVar("T")
 
-def get(model:Type[T], afqn: str) -> T:
+
+def get(model: Type[T], afqn: str) -> T:
     """Create a Python object of type Type[T] deserializing configuration file of the class which fully qualified name is afqn.
     The path of the configuration file is compute by the config_file_name function
 
@@ -39,6 +41,6 @@ def config(clazz):
     """Decorator allowing to transform a python object into a configuration file, and vice versa
 
     :param clazz: class to decorate
-    :return: the decorated class 
+    :return: the decorated class
     """
     return deserialize(serialize(dataclass(clazz)))

@@ -8,21 +8,32 @@ from socket import socket
 import sys
 import threading
 from time import sleep, time
-from typing import (Any, Callable, Dict, Generic, Iterable, List, Mapping,
-                    Optional, Type, TypeVar, cast)
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Type,
+    TypeVar,
+    cast,
+)
 from uuid import uuid4
 import uuid
 
 import ray  # type: ignore
-from dask_cuda import LocalCUDACluster # type: ignore
+from dask_cuda import LocalCUDACluster  # type: ignore
 from dask.distributed import Client  # type: ignore
 from dask.distributed import LocalCluster as DaskLocalClutster  # type: ignore
 from distributed.client import Future  # type: ignore
 from ray.util.multiprocessing import Pool as OriginalRayPool  # type: ignore
 from ray.util.multiprocessing.pool import RAY_ADDRESS_ENV  # type: ignore
-from ray.util.multiprocessing.pool import logger   # type: ignore
+from ray.util.multiprocessing.pool import logger  # type: ignore
 from ray.util.queue import Queue, Empty  # type: ignore
-from ray.exceptions import RayActorError # type: ignore
+from ray.exceptions import RayActorError  # type: ignore
 
 _InputType = TypeVar("_InputType")
 _OutputType = TypeVar("_OutputType")
@@ -31,6 +42,7 @@ _OutputType = TypeVar("_OutputType")
 class AsyncResult(ABC, Generic[_OutputType]):
     """AsyncResult defines resuts for asynchronous functions
     """
+
     @abstractmethod
     def get(self, timeout: Optional[float]) -> Optional[_OutputType]:
         """Returns the result when it is ready
@@ -105,9 +117,9 @@ class MapResult(AsyncResult[List[_OutputType]]):
 
 
 def compose(*funcs: Callable[..., Any]) -> Callable[..., Any]:
-    """Compose function in the mathematical sense, compose(e, f, g) returns F: x -> e(f(g(x))) 
+    """Compose function in the mathematical sense, compose(e, f, g) returns F: x -> e(f(g(x)))
 
-    :return: F: *args -> funcs[0](funcs[1](... funcs[N](args)))...) 
+    :return: F: *args -> funcs[0](funcs[1](... funcs[N](args)))...)
     :rtype: Callable[..., Any]
     """
     return functools.reduce(lambda f, g: lambda *args: f(g(*args)), funcs)
@@ -121,11 +133,12 @@ class PoolAPI:
     def __init__(self, n_worker) -> None:
         self.n_worker = n_worker
 
-    def apply(self,
-              func: Callable[..., _OutputType],
-              args: Optional[Iterable[Any]] = None,
-              kwds: Optional[Mapping[str, Any]] = None,
-              ) -> Optional[_OutputType]:
+    def apply(
+        self,
+        func: Callable[..., _OutputType],
+        args: Optional[Iterable[Any]] = None,
+        kwds: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[_OutputType]:
         """Call func with arguments args and keyword arguments kwds. It blocks until the result is ready. Given this blocks, apply_async() is better suited for performing work in parallel.
 
         :param func: the callable to be run
@@ -170,11 +183,12 @@ class PoolAPI:
         :rtype: AsyncResult[_OutputType]
         """
 
-    def map(self,
-            func: Callable[[_InputType], _OutputType],
-            iterable: Iterable[_InputType],
-            chunksize: Optional[int] = 1
-            ) -> List[_OutputType]:
+    def map(
+        self,
+        func: Callable[[_InputType], _OutputType],
+        iterable: Iterable[_InputType],
+        chunksize: Optional[int] = 1,
+    ) -> List[_OutputType]:
         """A parallel equivalent of the map() built-in function (it supports only one iterable argument though, for multiple iterables see starmap()). It blocks until the result is ready.
 
         This method chops the iterable into a number of chunks which it submits to the process pool as separate tasks. The (approximate) size of these chunks can be specified by setting chunksize to a positive integer.
@@ -183,12 +197,14 @@ class PoolAPI:
         :type func: Callable[[_InputType], _OutputType]
         :param iterable: The input parameters on which func is called
         :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a ressource 
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
         :type chunksize: Optional[int]
         :return: the list of results ([..., func(iterable[i]), ...])
         :rtype: List[_OutputType]
         """
-        return self.map_async(func=func, iterable=iterable, chunksize=chunksize).get(timeout=None)
+        return self.map_async(func=func, iterable=iterable, chunksize=chunksize).get(
+            timeout=None
+        )
 
     def map_async(
         self,
@@ -210,7 +226,7 @@ class PoolAPI:
         :type func: Callable[[_InputType], _OutputType]
         :param iterable: The input parameters on which func is called
         :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a ressource 
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
         :type chunksize: Optional[int]
         :param callback: a callable that is called each time a result is available, callback is called with this result
         :type callback: Optional[Callable[[_OutputType], None]]
@@ -219,18 +235,25 @@ class PoolAPI:
         :return: The list of async results ([..., AsyncResult(func(iterable[i])), ...])
         :rtype: MapResult[_OutputType]
         """
-        return MapResult([self.apply_async(func=func, 
-                                            args=cast(Optional[Iterable[Any]], e), 
-                                            kwds={}, 
-                                            callback=callback, 
-                                            error_callback=error_callback) 
-                                        for e in iterable])
+        return MapResult(
+            [
+                self.apply_async(
+                    func=func,
+                    args=cast(Optional[Iterable[Any]], e),
+                    kwds={},
+                    callback=callback,
+                    error_callback=error_callback,
+                )
+                for e in iterable
+            ]
+        )
 
-    def reduce(self,
-               func: Callable[[_InputType, _InputType], _OutputType],
-               iterable: Iterable[_InputType],
-               chunksize: Optional[int] = 1
-               ) -> Optional[_OutputType]:
+    def reduce(
+        self,
+        func: Callable[[_InputType, _InputType], _OutputType],
+        iterable: Iterable[_InputType],
+        chunksize: Optional[int] = 1,
+    ) -> Optional[_OutputType]:
         """A parallel equivalent of the functools.reduce function. It blocks until the result is ready.
 
         This method chops the iterable into a number of chunks which it submits to the process pool as separate tasks. The (approximate) size of these chunks can be specified by setting chunksize to a positive integer.
@@ -239,12 +262,14 @@ class PoolAPI:
         :type func: Callable[[_InputType], _OutputType]
         :param iterable: The input parameters on which func is called
         :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a ressource 
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
         :type chunksize: Optional[int]
         :return: the list of results ([..., func(iterable[i]), ...])
         :rtype: List[_OutputType]
         """
-        return self.reduce_async(func=func, iterable=iterable, chunksize=chunksize).get(timeout=None)
+        return self.reduce_async(func=func, iterable=iterable, chunksize=chunksize).get(
+            timeout=None
+        )
 
     def reduce_async(
         self,
@@ -266,7 +291,7 @@ class PoolAPI:
         :type func: Callable[[_InputType, _InputType], _OutputType]
         :param iterable: The input parameters on which func is called
         :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a ressource 
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
         :type chunksize: Optional[int]
         :param callback: a callable that is called each time a result is available, callback is called with this result
         :type callback: Optional[Callable[[_OutputType], None]]
@@ -276,8 +301,12 @@ class PoolAPI:
         :rtype: MapResult[_OutputType]
         """
 
-
-    def starmap(self, func: Callable[..., _OutputType], iterable: Iterable[Iterable[Any]], chunksize: Optional[int]) -> List[_OutputType]:
+    def starmap(
+        self,
+        func: Callable[..., _OutputType],
+        iterable: Iterable[Iterable[Any]],
+        chunksize: Optional[int],
+    ) -> List[_OutputType]:
         """Like map() except that the elements of the iterable are expected to be iterables that are unpacked as arguments.
 
         Hence an iterable of [(1,2), (3, 4)] results in [func(1,2), func(3,4)].
@@ -286,12 +315,14 @@ class PoolAPI:
         :type func: Callable[[_InputType], _OutputType]
         :param iterable: The input parameters on which func is called
         :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a ressource 
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
         :type chunksize: Optional[int]
         :return: the list of results ([..., func(iterable[i]), ...])
         :rtype: List[_OutputType]
         """
-        return self.starmap_async(func=func, iterable=iterable, chunksize=chunksize).get(timeout=None)
+        return self.starmap_async(
+            func=func, iterable=iterable, chunksize=chunksize
+        ).get(timeout=None)
 
     def starmap_async(
         self,
@@ -307,7 +338,7 @@ class PoolAPI:
         :type func: Callable[[_InputType], _OutputType]
         :param iterable: The input parameters on which func is called
         :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a ressource 
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
         :type chunksize: Optional[int]
         :param callback: a callable that is called each time a result is available, callback is called with this result
         :type callback: Optional[Callable[[_OutputType], None]]
@@ -316,7 +347,18 @@ class PoolAPI:
         :return: the list of async results ([..., AsyncResult(func(iterable[i])), ...])
         :rtype: MapResult[_OutputType]
         """
-        return MapResult([self.apply_async(func=func, args=tuple(it), kwds={}, callback=callback, error_callback=error_callback) for it in iterable])
+        return MapResult(
+            [
+                self.apply_async(
+                    func=func,
+                    args=tuple(it),
+                    kwds={},
+                    callback=callback,
+                    error_callback=error_callback,
+                )
+                for it in iterable
+            ]
+        )
 
     @abstractmethod
     def terminate(self) -> None:
@@ -333,7 +375,13 @@ class LocalPoolAPI(PoolAPI):
     """Defines the API of a local resource Pool running on a single machine
     """
 
-    def __init__(self, n_cpu: int = 0, memory_limit: float = 0, visible_gpu: List[int] = [], lazy: bool = False) -> None:
+    def __init__(
+        self,
+        n_cpu: int = 0,
+        memory_limit: float = 0,
+        visible_gpu: List[int] = [],
+        lazy: bool = False,
+    ) -> None:
         """LocalPoolAPI api constructor
 
         :param n_cpu: number of CPU of this resource pool, when n_cpu is 0 all the logical cores available on the machine are used, defaults to 0
@@ -356,7 +404,13 @@ class DistributedPoolAPI(PoolAPI):
     """Defines the API of a distribued Pool of resources (resources are distributed over a cluster of machine)
     """
 
-    def __init__(self, n_worker: int, n_cpu_per_worker: int, n_visible_cpu_per_worker: int, local_pool_class: Type[LocalPoolAPI]) -> None:
+    def __init__(
+        self,
+        n_worker: int,
+        n_cpu_per_worker: int,
+        n_visible_cpu_per_worker: int,
+        local_pool_class: Type[LocalPoolAPI],
+    ) -> None:
         """DistributedPoolAPI constructor
 
         :param n_worker: number of worker to deploy on the cluster
@@ -373,7 +427,9 @@ class DistributedPoolAPI(PoolAPI):
         self.n_visible_cpu_per_worker = n_visible_cpu_per_worker
         self.local_pool_class = local_pool_class
 
-    def create_local_pool(self, n_cpu: int = 0, memory_limit: float = 0, n_visible_gpu: List[int] = []) -> LocalPoolAPI:
+    def create_local_pool(
+        self, n_cpu: int = 0, memory_limit: float = 0, n_visible_gpu: List[int] = []
+    ) -> LocalPoolAPI:
         """Create a lazy local resource Pool to use on a worker
 
         :param n_cpu: number of CPU of this resource pool, when n_cpu is 0 all the logical cores available on the machine are used, defaults to 0
@@ -402,12 +458,14 @@ class RayPool(OriginalRayPool):
         if not ray.is_initialized():
             # Cluster mode.
             if ray_address is None and RAY_ADDRESS_ENV in os.environ:
-                logger.info("Connecting to ray cluster at address='{}'".format(
-                    os.environ[RAY_ADDRESS_ENV]))
+                logger.info(
+                    "Connecting to ray cluster at address='{}'".format(
+                        os.environ[RAY_ADDRESS_ENV]
+                    )
+                )
                 ray.init(include_dashboard=False)
             elif ray_address is not None:
-                logger.info(
-                    f"Connecting to ray cluster at address='{ray_address}'")
+                logger.info(f"Connecting to ray cluster at address='{ray_address}'")
                 ray.init(address=ray_address, include_dashboard=False)
             # Local mode.
             else:
@@ -420,34 +478,34 @@ class RayPool(OriginalRayPool):
         if processes <= 0:
             raise ValueError("Processes in the pool must be >0.")
         if ray_cpus < processes:
-            raise ValueError("Tried to start a pool with {} processes on an "
-                             "existing ray cluster, but there are only {} "
-                             "CPUs in the ray cluster.".format(
-                                 processes, ray_cpus))
+            raise ValueError(
+                "Tried to start a pool with {} processes on an "
+                "existing ray cluster, but there are only {} "
+                "CPUs in the ray cluster.".format(processes, ray_cpus)
+            )
 
         return processes
 
 
 class DaskAsyncResult(AsyncResult):
-
     def __init__(self, f: Future) -> None:
-        __doc__ = super().__init__.__doc__
+        __doc__ = super().__init__.__doc__  # noqa: F841
         self.future = f
 
     def get(self, timeout: Optional[float]) -> _OutputType:
-        __doc__ = super().get.__doc__
+        __doc__ = super().get.__doc__  # noqa: F841
         return self.future.result(timeout=timeout)
 
     def wait(self, timeout: Optional[float]) -> None:
-        __doc__ = super().wait.__doc__
+        __doc__ = super().wait.__doc__  # noqa: F841
         self.future.result(timeout)
 
     def ready(self) -> bool:
-        __doc__ = super().ready.__doc__
+        __doc__ = super().ready.__doc__  # noqa: F841
         return self.future.done()
 
     def successful(self) -> bool:
-        __doc__ = super().successful.__doc__
+        __doc__ = super().successful.__doc__  # noqa: F841
         assert self.ready()
         return not self.future.exception()
 
@@ -472,9 +530,17 @@ class LocalCluster(LocalPoolAPI):
     A resource pool object which controls a pool of ressources (CPU, GPU, ...) to which jobs can be submitted. It supports asynchronous results with timeouts and callbacks and has a parallel map implementation.
     """
 
-    def __init__(self, n_cpu: int = 0, memory_limit: float = 0,  visible_gpu: List[int]= [], lazy: bool = False) -> None:
-        super().__init__(n_cpu=n_cpu, memory_limit=memory_limit, visible_gpu=visible_gpu, lazy=lazy)
-        __doc__ = LocalPoolAPI.__init__.__doc__
+    def __init__(
+        self,
+        n_cpu: int = 0,
+        memory_limit: float = 0,
+        visible_gpu: List[int] = [],
+        lazy: bool = False,
+    ) -> None:
+        super().__init__(
+            n_cpu=n_cpu, memory_limit=memory_limit, visible_gpu=visible_gpu, lazy=lazy
+        )
+        __doc__ = LocalPoolAPI.__init__.__doc__  # noqa: F841
 
         self.initialized = False
         self.client: Client
@@ -490,7 +556,7 @@ class LocalCluster(LocalPoolAPI):
         error_callback: Optional[Callable[[BaseException], None]] = None,
     ) -> AsyncResult[_OutputType]:
         # copy documentation from super class
-        __doc__ = super().apply_async.__doc__
+        __doc__ = super().apply_async.__doc__  # noqa: F841
 
         # allocate the local resources if not done previously (lazy)
         if not self.initialized:
@@ -504,6 +570,7 @@ class LocalCluster(LocalPoolAPI):
                 error_callback(exception)
             if callback:
                 callback(f.result())
+
         future.add_done_callback(dask_callback)
 
         return DaskAsyncResult(future)
@@ -513,13 +580,20 @@ class LocalCluster(LocalPoolAPI):
         """
         # cluster = LocalCluster(n_workers=self.n_cpu, scheduler_port=self._get_port())
         # convert memory_limit in byte
-        memory_limit = self.memory_limit*1024*1024*1024
+        memory_limit = self.memory_limit * 1024 * 1024 * 1024
         if self.n_visible_gpu:
-            cluster = LocalCUDACluster(n_workers=self.n_cpu, memory_limit=int(memory_limit),
-                               dashboard_address=f":{self._get_port()}", CUDA_VISIBLE_DEVICES=self.n_visible_gpu)
+            cluster = LocalCUDACluster(
+                n_workers=self.n_cpu,
+                memory_limit=int(memory_limit),
+                dashboard_address=f":{self._get_port()}",
+                CUDA_VISIBLE_DEVICES=self.n_visible_gpu,
+            )
         else:
-            cluster = DaskLocalClutster(n_workers=self.n_cpu, memory_limit=int(memory_limit),
-                               dashboard_address=f":{self._get_port()}")
+            cluster = DaskLocalClutster(
+                n_workers=self.n_cpu,
+                memory_limit=int(memory_limit),
+                dashboard_address=f":{self._get_port()}",
+            )
         self.client = Client(cluster)
         self.initialized = True
 
@@ -535,11 +609,11 @@ class LocalCluster(LocalPoolAPI):
             return s.getsockname()[1]
 
     def terminate(self) -> None:
-        __doc__ = LocalPoolAPI.__init__.__doc__
+        __doc__ = LocalPoolAPI.__init__.__doc__  # noqa: F841
         self.client.shutdown()
 
     def close(self) -> None:
-        __doc__ = LocalPoolAPI.__init__.__doc__
+        __doc__ = LocalPoolAPI.__init__.__doc__  # noqa: F841
         self.client.close()
 
 
@@ -574,6 +648,7 @@ class _RayTask(Generic[_OutputType]):
                 self.error_callback(e)
         return res
 
+
 @ray.remote
 class _RayExecutorActor:
     """A Ray actor that reads task from the task queue and execute them"""
@@ -592,7 +667,7 @@ class _RayExecutorActor:
 
     def start(self):
         """Continuously dequeue tasks form task queue, run them and put the result into the result queue"""
-        with open("ray.log", 'w') as f:
+        with open("ray.log", "w") as f:
             f.write("test\n")
             f.flush()
             self.started = True
@@ -621,6 +696,7 @@ class _RayExecutorActor:
 @dataclass
 class _RayTaskResult(Generic[_OutputType]):
     """Stores the results of the executed tasks"""
+
     task_id: uuid.UUID
     """Identifier of the task"""
     result: Optional[_OutputType] = None
@@ -643,7 +719,7 @@ class _RayAsyncResult(Generic[_OutputType], AsyncResult[_OutputType]):
         self.result: Optional[_RayTaskResult[_OutputType]] = None
 
     def get(self, timeout: Optional[float]) -> Optional[_OutputType]:
-        __doc__ = super().get.__doc__
+        __doc__ = super().get.__doc__  # noqa: F841
 
         self.wait(timeout)
         if self.result:
@@ -651,24 +727,24 @@ class _RayAsyncResult(Generic[_OutputType], AsyncResult[_OutputType]):
         raise RuntimeError()
 
     def wait(self, timeout: Optional[float]) -> None:
-        __doc__ = super().wait.__doc__
+        __doc__ = super().wait.__doc__  # noqa: F841
 
         start_time = time()
         tm = timeout
         if tm is None:
             tm = sys.float_info.max
         while tm > (time() - start_time) and self.result is None:
-            sleep(.001)
+            sleep(0.001)
 
     def ready(self) -> bool:
-        __doc__ = super().ready.__doc__
+        __doc__ = super().ready.__doc__  # noqa: F841
 
-        return not self.result is None
+        return self.result is not None
 
     def successful(self) -> bool:
-        __doc__ = super().successful.__doc__
+        __doc__ = super().successful.__doc__  # noqa: F841
         assert self.ready()
-        return not self.result is None and self.result.exception is None
+        return self.result is not None and self.result.exception is None
 
 
 class DistributedCluster(DistributedPoolAPI):
@@ -676,15 +752,19 @@ class DistributedCluster(DistributedPoolAPI):
     A resource pool object which controls a pool of ressources (CPU, GPU, ...) to which jobs can be submitted. It supports asynchronous results with timeouts and callbacks and has a parallel map implementation.
     """
 
-    def __init__(self, n_worker: int,
-                 n_cpu_per_worker: int,
-                 n_visible_cpu_per_worker: int,
-                 local_pool_class: Type[LocalPoolAPI],
-                 max_pending_task: int = 10000) -> None:
+    def __init__(
+        self,
+        n_worker: int,
+        n_cpu_per_worker: int,
+        n_visible_cpu_per_worker: int,
+        local_pool_class: Type[LocalPoolAPI],
+        max_pending_task: int = 10000,
+    ) -> None:
         """RayDistributedCluster constructor"""
 
-        super().__init__(n_worker, n_cpu_per_worker,
-                         n_visible_cpu_per_worker, local_pool_class)
+        super().__init__(
+            n_worker, n_cpu_per_worker, n_visible_cpu_per_worker, local_pool_class
+        )
         # create task and results queues
         self.task_queue = Queue(max_pending_task)
         self.result_queue = Queue(max_pending_task)
@@ -693,9 +773,13 @@ class DistributedCluster(DistributedPoolAPI):
             "num_cpus": n_cpu_per_worker,
             "num_gpus": n_visible_cpu_per_worker,
         }
-        
-        self.actor_pool = [_RayExecutorActor.options(**opt).remote( # type: ignore
-            self.task_queue, self.result_queue) for _ in range(n_worker)]
+
+        self.actor_pool = [
+            _RayExecutorActor.options(**opt).remote(  # type: ignore
+                self.task_queue, self.result_queue
+            )
+            for _ in range(n_worker)
+        ]
         for a in self.actor_pool:
             a.start.remote()
 
@@ -723,10 +807,8 @@ class DistributedCluster(DistributedPoolAPI):
                     continue
                 except RayActorError:
                     break
-                
 
-        self.result_consumer_thread = threading.Thread(
-            target=consume_result_queue)
+        self.result_consumer_thread = threading.Thread(target=consume_result_queue)
         self.result_consumer_thread.start()
 
     def apply_async(
@@ -737,35 +819,39 @@ class DistributedCluster(DistributedPoolAPI):
         callback: Optional[Callable[[_OutputType], None]] = None,
         error_callback: Optional[Callable[[BaseException], None]] = None,
     ) -> AsyncResult[_OutputType]:
-        __doc__ = super().apply_async.__doc__
-        task = _RayTask(task_id=uuid4(),
-                        func=func,
-                        args=args,
-                        kwds=kwds,
-                        callback=callback,
-                        error_callback=error_callback)
+        __doc__ = super().apply_async.__doc__  # noqa: F841
+        task = _RayTask(
+            task_id=uuid4(),
+            func=func,
+            args=args,
+            kwds=kwds,
+            callback=callback,
+            error_callback=error_callback,
+        )
         self.task_queue.put(task)
         async_res = _RayAsyncResult[_OutputType](task.task_id)
         self.processed_results[task.task_id] = async_res
-        return  async_res
+        return async_res
 
     def terminate(self) -> None:
-        __doc__ = super().terminate.__doc__
+        __doc__ = super().terminate.__doc__  # noqa: F841
 
         self.close()
         for a in self.actor_pool:
             ray.kill(a)
 
     def close(self) -> None:
-        __doc__ = super().close.__doc__
+        __doc__ = super().close.__doc__  # noqa: F841
 
         for a in self.actor_pool:
             a.stop.remote()
-       
+
         ray.kill(self.result_queue.actor)
         ray.kill(self.task_queue.actor)
         self.started = False
         sleep(1)
 
-    def create_local_pool(self, n_cpu: int = 0, memory_limit: float = 0,  n_visible_gpu: List[int] = []) -> LocalPoolAPI:
+    def create_local_pool(
+        self, n_cpu: int = 0, memory_limit: float = 0, n_visible_gpu: List[int] = []
+    ) -> LocalPoolAPI:
         return self.local_pool_class(n_cpu, memory_limit, n_visible_gpu, True)

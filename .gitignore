@@ -134,3 +134,5 @@ dask-worker-space
 
 # test logs
 *.log
+
+.vscode
