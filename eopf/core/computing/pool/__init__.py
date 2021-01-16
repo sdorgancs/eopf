@@ -372,7 +372,6 @@ class PoolAPI:
         self,
         func: Callable[..., _OutputType],
         iterable: Iterable[Iterable[Any]],
-        chunksize: Optional[int],
     ) -> List[_OutputType]:
         """Like map() except that the elements of the iterable are expected to be iterables that are unpacked as arguments.
 
@@ -387,7 +386,7 @@ class PoolAPI:
         :return: the list of results ([..., func(iterable[i]), ...])
         :rtype: List[_OutputType]
         """
-        return self.starmap_async(func=func, iterable=iterable).get(timeout=None)
+        return self.starmap_async(func=star_wrap(func), iterable=iterable).get(timeout=None)
 
     def starmap_async(
         self,
@@ -428,7 +427,7 @@ class PoolAPI:
         results = []
 
         for task in tasks:
-            func = _star_wrap(task.func)
+            func = star_wrap(task.func)
             res = self.apply_async(
                 func=func,
                 args=task.args,
@@ -442,6 +441,15 @@ class PoolAPI:
     def parallel(
         self, tasks: Iterable[PoolTask[Any]], timeout: Optional[float] = None
     ) -> List[Any]:
+        """Run tasks in parallel
+
+        :param tasks: a list of PoolTask to run in parallel
+        :type tasks: Iterable[PoolTask[Any]]
+        :param timeout: timeout, defaults to None
+        :type timeout: Optional[float], optional
+        :return: a list containing the results of exection of the tasks
+        :rtype: List[Any]
+        """
         return self.parallel_async(tasks=tasks).get(timeout=timeout)
 
     @abstractmethod
@@ -1028,7 +1036,7 @@ class DistributedPool(DistributedPoolAPI):
         return self.local_pool_class(n_cpu, memory_limit, n_visible_gpu, lazy=True)
 
 
-def _star_wrap(func):
+def star_wrap(func):
     def star_func(args):
         if args is not None:
             return func(*args)

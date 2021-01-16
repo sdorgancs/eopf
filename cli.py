@@ -1,10 +1,12 @@
-from eopf.core.computing.pool import LocalPool, RayPool
-from eopf.algorithms import ProcessingContext
 import json
 import sys
 from traceback import print_exc
+
 import click
-from eopf.core.production.triggering import registry, import_algorithms
+
+from eopf.algorithms import ProcessingContext
+from eopf.core.computing.pool import DistributedPool, LocalPool
+from eopf.core.production.triggering import import_algorithms, registry
 
 
 @click.group()
@@ -86,7 +88,7 @@ def run(algorithm, input_file, output_file, use_ray):
                 input_class = algo.input_class()
                 param = input_class.from_json(fi.read(), validate=True)
                 if use_ray:
-                    context = ProcessingContext(RayPool(), None)
+                    context = ProcessingContext(DistributedPool(), None)
                 else:
                     context = ProcessingContext(LocalPool(), None)
                 output = algo(context)(param)
