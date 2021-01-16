@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from genericpath import exists
 from pathlib import Path
-from typing import Type, TypeVar
+from typing import Optional, Type, TypeVar
 
 from serde import from_dict  # type: ignore
 from serde import deserialize, serialize
@@ -22,7 +23,7 @@ def config_file_name(afqn: str) -> str:
 T = TypeVar("T")
 
 
-def get(model: Type[T], afqn: str) -> T:
+def get(model: Type[T], afqn: str) -> Optional[T]:
     """Create a Python object of type Type[T] deserializing configuration file of the class which fully qualified name is afqn.
     The path of the configuration file is compute by the config_file_name function
 
@@ -33,7 +34,10 @@ def get(model: Type[T], afqn: str) -> T:
     :return: an instance of Type[T] created deserializing the configuration file
     :rtype: T
     """
-    with open(config_file_name(afqn)) as c:
+    name = config_file_name(afqn)
+    if not exists(name):
+        return None
+    with open(name) as c:
         return from_dict(model, TomlDeserializer.deserialize(c.read()))
 
 

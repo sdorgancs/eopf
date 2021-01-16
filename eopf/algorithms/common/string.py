@@ -58,6 +58,8 @@ class Concat(Algorithm[SeparatorConfig, ConcatInput, ConcatOutput]):
     def call(self, param: ConcatInput) -> ConcatOutput:
         self.context.logger.debug("Concat starts")
         # read the separator from the configuration (~/.eopf/config/eopf/algorithms/common/string/Concat.toml)
+        assert self.configuration is not None
+        assert self.configuration.separator is not None
         sep = self.configuration.separator
         # parallize the concatenation tasks using the resource Pool given by the master process
         results = self.context.pool.map(sep.join, param.strings)
@@ -110,6 +112,7 @@ class Split(Algorithm[SeparatorConfig, SplitInput, SplitOutput]):
     def call(self, param: SplitInput) -> SplitOutput:
         self.context.logger.debug("Split starts")
         # read the separator from the configuration (~/.eopf/config/eopf/algorithms/common/string/Split.toml)
+        assert self.configuration is not None
         sep = self.configuration.separator
 
         def split(original: str) -> List[str]:
@@ -131,7 +134,7 @@ class ReplaceInput(Parameter):
     """the value to replace"""
     newvalue: str
     """the value used to replace oldvalue"""
-    maxreplace: Optional[int]
+    maxreplace: Optional[int] = None
     """the maximum number of occurences to replace by string"""
 
     def is_valid(self) -> bool:
@@ -185,7 +188,7 @@ class Replace(Algorithm[None, ReplaceInput, ReplaceOutput]):
                 return original.replace(
                     param.oldvalue, param.newvalue, param.maxreplace
                 )
-
+        print(f"{self.context.pool}")
         # parallize the replace tasks using the resource Pool given by the master process
         results = self.context.pool.map(replace, param.strings)
         self.context.logger.debug("Replace ends")

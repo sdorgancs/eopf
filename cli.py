@@ -1,4 +1,4 @@
-from eopf.core.computing.pool import LocalCluster, RayPool
+from eopf.core.computing.pool import LocalPool, RayPool
 from eopf.algorithms import ProcessingContext
 import json
 import sys
@@ -88,7 +88,7 @@ def run(algorithm, input_file, output_file, use_ray):
                 if use_ray:
                     context = ProcessingContext(RayPool(), None)
                 else:
-                    context = ProcessingContext(LocalCluster(), None)
+                    context = ProcessingContext(LocalPool(), None)
                 output = algo(context)(param)
                 jsoutout = output.to_json()
                 with open(output_file, "w") as fo:
