@@ -40,9 +40,10 @@ def test_download(s3_fs):
     s3_fs.remove("/config")
     assert not s3_fs.exists("/config")
 
+
 def test_open(s3_fs):
-    s3_fs.upload("concat.json", "/concat.json")
-    with s3_fs.open('/concat.json') as f:
+    s3_fs.upload("cli_examples/concat.json", "/concat.json")
+    with s3_fs.open("/concat.json") as f:
         concat = json.load(f)
-        assert 'strings' in concat
+        assert "strings" in concat
     s3_fs.remove("/concat.json")

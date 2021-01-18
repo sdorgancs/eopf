@@ -310,7 +310,6 @@ class MuliStorage(StorageAPI):
                 # remote path is intended to to a directory and it does not exists
                 if remote_path[-1] == "/" and not self.exists(remote_path):
                     self.mkdir(remote_path)
-                    
                 self.remote_fs.upload(remote_path, file)
 
         elif local_path_type is EntryType.DIRECTORY:
