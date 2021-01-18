@@ -29,8 +29,8 @@ from dask.distributed import Client  # type: ignore
 from dask.distributed import LocalCluster as DaskLocalClutster  # type: ignore
 from distributed.client import Future  # type: ignore # type: ignore
 from ray.util.queue import Queue, Empty  # type: ignore
-from ray.exceptions import RayActorError
-import more_itertools as mitertools
+from ray.exceptions import RayActorError  # type: ignore
+import more_itertools as mitertools  # type: ignore
 
 _InputType = TypeVar("_InputType")
 _OutputType = TypeVar("_OutputType")
@@ -369,9 +369,7 @@ class PoolAPI:
         return ReduceResult[_InputType](func=func, map_result=result)
 
     def starmap(
-        self,
-        func: Callable[..., _OutputType],
-        iterable: Iterable[Iterable[Any]],
+        self, func: Callable[..., _OutputType], iterable: Iterable[Iterable[Any]],
     ) -> List[_OutputType]:
         """Like map() except that the elements of the iterable are expected to be iterables that are unpacked as arguments.
 
@@ -386,7 +384,9 @@ class PoolAPI:
         :return: the list of results ([..., func(iterable[i]), ...])
         :rtype: List[_OutputType]
         """
-        return self.starmap_async(func=star_wrap(func), iterable=iterable).get(timeout=None)
+        return self.starmap_async(func=star_wrap(func), iterable=iterable).get(
+            timeout=None
+        )
 
     def starmap_async(
         self,

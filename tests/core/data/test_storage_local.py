@@ -5,15 +5,17 @@ import shutil
 import json
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def local_fs():
     from eopf.core.data.storage import MuliStorage
-    if path.exists('local-test'):
-        shutil.rmtree('local-test')
-    os.mkdir('local-test')
-    shutil.copy('README.md', 'local-test')
+
+    if path.exists("local-test"):
+        shutil.rmtree("local-test")
+    os.mkdir("local-test")
+    shutil.copy("README.md", "local-test")
     yield MuliStorage("osfs://local-test")
-    shutil.rmtree('local-test')
+    shutil.rmtree("local-test")
+
 
 def test_connection(local_fs):
     files = local_fs.ls("/")
