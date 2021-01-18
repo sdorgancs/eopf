@@ -135,4 +135,9 @@ dask-worker-space
 # test logs
 *.log
 
+# vs code project files
 .vscode
+
+# minio tests files
+minio_data
+mc
