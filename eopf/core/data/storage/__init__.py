@@ -12,7 +12,7 @@ from typing import IO, Any, Dict, List, Optional, Union
 
 from fs import open_fs
 from fs.enums import ResourceType
-from fs_s3fs import S3FS # type: ignore
+from fs_s3fs import S3FS  # type: ignore
 
 
 @dataclass

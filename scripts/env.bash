@@ -1,4 +1,4 @@
-export PYTHONPATH=$(pwd)
+export PYTHONPATH=$(realpath $(pwd)/..)
 
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
