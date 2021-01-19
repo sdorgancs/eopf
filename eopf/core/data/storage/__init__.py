@@ -19,7 +19,6 @@ from fs_s3fs import S3FS  # type: ignore
 class BasicAuthentication:
     """BasicAuthentication is used to connect services using a username/password pair (LDAP, SQL Database, ...)
     """
-
     username: str
     password: str
 
@@ -28,7 +27,6 @@ class BasicAuthentication:
 class AuthenticationByToken:
     """AuthenticationByToken is used to connect services using authentication token (OpenID, OAuth2, Kerberos...)
     """
-
     token: str
 
 

@@ -138,6 +138,4 @@ dask-worker-space
 # vs code project files
 .vscode
 
-# minio tests files
-minio_data
-mc
+scripts/mc

@@ -1,0 +1,35 @@
+name: retest
+channels:
+  - defaults
+dependencies:
+  - python=3.8.5
+  - rioxarray
+  - dask
+  - netcdf4
+  - zarr
+  - fs
+  - h5netcdf
+  - dynaconf
+  - typer
+  - pyyaml
+  - autopep8
+  - geojson
+  - pylint
+  - mypy
+  - cudf
+  - distributed
+  - dask-cuda
+  - cudatoolkit
+  - black
+  - flake8
+  - more-itertools
+  - pytest
+  - sphinx
+  - pip:
+    - dataclasses-json
+    - dataclasses-jsonschema
+    - fs-s3fs
+    - pyserde
+    - ray
+    - requests
+    - xmltodict
