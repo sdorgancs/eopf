@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 from eopf.algorithms import (
-    Algorithm,
+    ProcessingUnit,
     Parameter,
     ParameterValidationResult,
     ProcessingContext,
@@ -23,8 +23,6 @@ ray.init()
 
 dp = DistributedPool(2, 6, 1)
 
-# lp = dp.create_local_pool()
-
 
 @dataclass
 class RCSInput(Parameter):
@@ -42,7 +40,7 @@ class RCSOutput(Parameter):
         return ParameterValidationResult(is_ok=True)
 
 
-class RCS(Algorithm[None, RCSInput, RCSOutput]):
+class RCS(ProcessingUnit[None, RCSInput, RCSOutput]):
     def call(self, param: RCSInput) -> RCSOutput:
         replace = Replace(self.context)
         split = Split(self.context)
@@ -56,8 +54,6 @@ class RCS(Algorithm[None, RCSInput, RCSOutput]):
 
 
 algo = RCS(ProcessingContext(dp))
-
-
 vsl = [f"#file{i}.txt" for i in range(4000)]
 result = algo(RCSInput(strings=vsl))
 

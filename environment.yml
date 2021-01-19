@@ -1,8 +1,12 @@
-name: retest
+name: eopf
 channels:
+  - rapidsai
+  - nvidia
+  - conda-forge
   - defaults
 dependencies:
   - python=3.8.5
+  - pip
   - rioxarray
   - dask
   - netcdf4

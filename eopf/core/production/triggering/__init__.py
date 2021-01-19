@@ -1,12 +1,12 @@
 from typing import Dict, Type
-from eopf.algorithms import Algorithm
+from eopf.algorithms import ProcessingUnit
 
 
 class AlgorithmRegistry:
     def __init__(self) -> None:
-        self.algorithms: Dict[str, Type[Algorithm]] = dict()
+        self.algorithms: Dict[str, Type[ProcessingUnit]] = dict()
 
-    def register(self, algo: Type[Algorithm]) -> None:
+    def register(self, algo: Type[ProcessingUnit]) -> None:
         self.algorithms[algo.name()] = algo
 
     def __call__(self) -> None:
@@ -16,7 +16,7 @@ class AlgorithmRegistry:
 registry = AlgorithmRegistry()
 
 
-def expose(algo: Type[Algorithm]) -> Type[Algorithm]:
+def expose(algo: Type[ProcessingUnit]) -> Type[ProcessingUnit]:
     """Expose is a class annotation used to add Algorithms to the command line tool and the webservice"""
     registry.register(algo)
     return algo

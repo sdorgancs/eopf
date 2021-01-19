@@ -1,16 +1,21 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from eopf.algorithms import Algorithm, Parameter, ParameterValidationResult
+from eopf.algorithms import ProcessingUnit, Parameter, ParameterValidationResult
 from eopf.core.production.configuration import config
 from eopf.core.production.triggering import expose
 
 
 @config
-class SeparatorConfig:
+class SeparatorConfig(Parameter):
     """SeparatorConfig is a configuration object that contains a string separator"""
 
     separator: str
+
+    def validate(self) -> ParameterValidationResult:
+        if self.separator is None:
+            return ParameterValidationResult(False, ["Configuration SeparatorConfig.separator cannot be null"])
+        return ParameterValidationResult(True)
 
 
 @dataclass
@@ -52,7 +57,7 @@ class ConcatOutput(Parameter):
 
 
 @expose
-class Concat(Algorithm[SeparatorConfig, ConcatInput, ConcatOutput]):
+class Concat(ProcessingUnit[SeparatorConfig, ConcatInput, ConcatOutput]):
     """Concat alorithm take a list in parameter, each element is a list of string which is concatenated"""
 
     def call(self, param: ConcatInput) -> ConcatOutput:
@@ -106,7 +111,7 @@ class SplitOutput(Parameter):
 
 
 @expose
-class Split(Algorithm[SeparatorConfig, SplitInput, SplitOutput]):
+class Split(ProcessingUnit[SeparatorConfig, SplitInput, SplitOutput]):
     """Split algorithm take a list of string in input and split them"""
 
     def call(self, param: SplitInput) -> SplitOutput:
@@ -175,7 +180,7 @@ class ReplaceOutput(Parameter):
 
 
 @expose
-class Replace(Algorithm[None, ReplaceInput, ReplaceOutput]):
+class Replace(ProcessingUnit[None, ReplaceInput, ReplaceOutput]):
     """Replace algorithm replaces input.oldvalue by input.newvalue for each items of input.strings"""
 
     def call(self, param: ReplaceInput) -> ReplaceOutput:

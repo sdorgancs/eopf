@@ -99,7 +99,8 @@ RUN code-server --install-extension lextudio.restructuredtext
 RUN git clone https://github.com/sdorgancs/eopf.git
 
 RUN conda env create -f eopf/environment.yml
-
+# Make RUN commands use the new environment:
+SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
 # Configure services
 USER root
 WORKDIR /

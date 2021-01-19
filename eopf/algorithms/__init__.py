@@ -2,7 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from logging import Logger
-from typing import Generic, List, Optional, Type, TypeVar, get_args
+from typing import Generic, List, Optional, Type, TypeVar, Union, get_args
 
 from dataclasses_jsonschema import JsonSchemaMixin
 from eopf.core.computing.pool import PoolAPI
@@ -53,7 +53,7 @@ class InvalidConfigurationParameter(InvalidParameter):
     """Exception raised when a configuration parameter is invalid"""
 
 
-Configuration = TypeVar("Configuration")
+Configuration = TypeVar("Configuration", bound=Union[Parameter, None])
 """Generic Algorithm configuration parameters"""
 
 Input = TypeVar("Input", bound=Parameter)
@@ -89,7 +89,7 @@ class ProcessingContext:
         return self._logger
 
 
-class Algorithm(Generic[Configuration, Input, Output], ABC):
+class ProcessingUnit(Generic[Configuration, Input, Output], ABC):
     """Algorithm is a generic abstract class that defines and eopf Algorithm. From the user point of view an Algorithm is a Callable[[Input], Output]).
     Errors are handled by exception, the master process calling the algorithm is responsible for handling exceptions.
 
