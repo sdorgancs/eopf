@@ -1,0 +1,12 @@
+[Unit]
+Description=Jupyter Lab
+
+[Service]
+Type=simple
+ExecStart=/usr/local/devtools/bin/jupyter lab --port 8080 --ip=0.0.0.0
+User=USER
+Group=USER
+WorkingDirectory=/home/USER
+
+[Install]
+WantedBy=multi-user.target

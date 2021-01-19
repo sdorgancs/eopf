@@ -1,0 +1,12 @@
+[Unit]
+Description=Code Server IDE
+
+[Service]
+Type=simple
+ExecStart=/usr/local/devtools/bin/code-server --bind-addr=0.0.0.0:8081 --auth=none
+User=USER
+Group=USER
+WorkingDirectory=/home/USER
+
+[Install]
+WantedBy=multi-user.target

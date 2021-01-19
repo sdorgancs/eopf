@@ -1,0 +1,10 @@
+[Unit]
+Description=Bootstrap Services
+
+[Service]
+EnvironmentFile=/env
+Type=simple
+ExecStart=/sbin/start.sh
+
+[Install]
+WantedBy=multi-user.target

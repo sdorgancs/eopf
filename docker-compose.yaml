@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  eopdsde:
+    build: ./docker
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - USERNAME=toto
+      - USERFULLNAME="toto toto"
+      - PYTHONPATH=/home/toto
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined

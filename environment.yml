@@ -25,6 +25,7 @@ dependencies:
   - more-itertools
   - pytest
   - sphinx
+  - docker-compose
   - pip:
     - dataclasses-json
     - dataclasses-jsonschema
