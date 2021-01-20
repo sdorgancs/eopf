@@ -19,7 +19,7 @@ from eopf.core.computing.pool import DistributedPool
 
 import ray
 
-ray.init()
+ray.init(address="auto")
 
 dp = DistributedPool(2, 6, 1)
 

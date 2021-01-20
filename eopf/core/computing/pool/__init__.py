@@ -309,6 +309,61 @@ class PoolAPI:
             ]
         )
 
+    def starmap(
+        self, func: Callable[..., _OutputType], iterable: Iterable[Iterable[Any]],
+    ) -> List[_OutputType]:
+        """Like map() except that the elements of the iterable are expected to be iterables that are unpacked as arguments.
+
+        Hence an iterable of [(1,2), (3, 4)] results in [func(1,2), func(3,4)].
+
+        :param func: the callable to be run
+        :type func: Callable[[_InputType], _OutputType]
+        :param iterable: The input parameters on which func is called
+        :type iterable: Iterable[_InputType]
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
+        :type chunksize: Optional[int]
+        :return: the list of results ([..., func(iterable[i]), ...])
+        :rtype: List[_OutputType]
+        """
+        return self.starmap_async(func=star_wrap(func), iterable=iterable).get(
+            timeout=None
+        )
+
+    def starmap_async(
+        self,
+        func: Callable[..., _OutputType],
+        iterable: Iterable[Iterable[Any]],
+        callback: Optional[Callable[[_OutputType], None]] = None,
+        error_callback: Optional[Callable[[BaseException], None]] = None,
+    ) -> MapResult[_OutputType]:
+        """A combination of starmap() and map_async() that iterates over iterable of iterables and calls func with the iterables unpacked. Returns a result object.
+
+        :param func: the callable to be run
+        :type func: Callable[[_InputType], _OutputType]
+        :param iterable: The input parameters on which func is called
+        :type iterable: Iterable[_InputType]
+        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
+        :type chunksize: Optional[int]
+        :param callback: a callable that is called each time a result is available, callback is called with this result
+        :type callback: Optional[Callable[[_OutputType], None]]
+        :param error_callback: a callable that is called each time func raise an exception, error_callback is called with this exception
+        :type error_callback: Optional[Callable[[BaseException], None]]
+        :return: the list of async results ([..., AsyncResult(func(iterable[i])), ...])
+        :rtype: MapResult[_OutputType]
+        """
+        return DefaultMapResult(
+            [
+                self.apply_async(
+                    func=func,
+                    args=tuple(it),
+                    kwds={},
+                    callback=callback,
+                    error_callback=error_callback,
+                )
+                for it in iterable
+            ]
+        )
+
     def reduce(
         self,
         func: Callable[[_InputType, _InputType], _InputType],
@@ -367,61 +422,6 @@ class PoolAPI:
             tasks.append(task)
         result = self.parallel_async(tasks=tasks)
         return ReduceResult[_InputType](func=func, map_result=result)
-
-    def starmap(
-        self, func: Callable[..., _OutputType], iterable: Iterable[Iterable[Any]],
-    ) -> List[_OutputType]:
-        """Like map() except that the elements of the iterable are expected to be iterables that are unpacked as arguments.
-
-        Hence an iterable of [(1,2), (3, 4)] results in [func(1,2), func(3,4)].
-
-        :param func: the callable to be run
-        :type func: Callable[[_InputType], _OutputType]
-        :param iterable: The input parameters on which func is called
-        :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
-        :type chunksize: Optional[int]
-        :return: the list of results ([..., func(iterable[i]), ...])
-        :rtype: List[_OutputType]
-        """
-        return self.starmap_async(func=star_wrap(func), iterable=iterable).get(
-            timeout=None
-        )
-
-    def starmap_async(
-        self,
-        func: Callable[..., _OutputType],
-        iterable: Iterable[Iterable[Any]],
-        callback: Optional[Callable[[_OutputType], None]] = None,
-        error_callback: Optional[Callable[[BaseException], None]] = None,
-    ) -> MapResult[_OutputType]:
-        """A combination of starmap() and map_async() that iterates over iterable of iterables and calls func with the iterables unpacked. Returns a result object.
-
-        :param func: the callable to be run
-        :type func: Callable[[_InputType], _OutputType]
-        :param iterable: The input parameters on which func is called
-        :type iterable: Iterable[_InputType]
-        :param chunksize: Divides the iterable group of size chuncksize, a group is sent in batch to a resource
-        :type chunksize: Optional[int]
-        :param callback: a callable that is called each time a result is available, callback is called with this result
-        :type callback: Optional[Callable[[_OutputType], None]]
-        :param error_callback: a callable that is called each time func raise an exception, error_callback is called with this exception
-        :type error_callback: Optional[Callable[[BaseException], None]]
-        :return: the list of async results ([..., AsyncResult(func(iterable[i])), ...])
-        :rtype: MapResult[_OutputType]
-        """
-        return DefaultMapResult(
-            [
-                self.apply_async(
-                    func=func,
-                    args=tuple(it),
-                    kwds={},
-                    callback=callback,
-                    error_callback=error_callback,
-                )
-                for it in iterable
-            ]
-        )
 
     def parallel_async(self, tasks: Iterable[PoolTask[Any]]) -> MapResult[Any]:
         results = []
