@@ -2,10 +2,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Union
 
-from eopf.core.data.catalog import (
-    FeaturePropertyPredicate,
-    FeaturePropertyTransformation,
-)
+from eopf.core.data.catalog import (FeaturePropertyPredicate,
+                                    FeaturePropertyTransformation)
 
 Number = Union[int, float]
 

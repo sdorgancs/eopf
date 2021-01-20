@@ -1,4 +1,4 @@
-localhost {
+localhost:80 {
     route /notebooks* {
         reverse_proxy 127.0.0.1:8080
     }
@@ -7,5 +7,7 @@ localhost {
         uri strip_prefix /code
         reverse_proxy 127.0.0.1:8081
     }
+    redir /code     /code/
+    redir /notebooks /notebooks/
    
 }

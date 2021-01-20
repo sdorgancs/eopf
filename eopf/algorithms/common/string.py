@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from eopf.algorithms import ProcessingUnit, Parameter, ParameterValidationResult
-from eopf.core.production.configuration import config
+from eopf.algorithms import ProcessingUnit
+from eopf.core.production.configuration import (Parameter,
+                                                ParameterValidationResult,
+                                                config)
 from eopf.core.production.triggering import expose
 
 
@@ -14,7 +16,9 @@ class SeparatorConfig(Parameter):
 
     def validate(self) -> ParameterValidationResult:
         if self.separator is None:
-            return ParameterValidationResult(False, ["Configuration SeparatorConfig.separator cannot be null"])
+            return ParameterValidationResult(
+                False, ["Configuration SeparatorConfig.separator cannot be null"]
+            )
         return ParameterValidationResult(True)
 
 
@@ -143,7 +147,11 @@ class ReplaceInput(Parameter):
     """the maximum number of occurences to replace by string"""
 
     def is_valid(self) -> bool:
-        return ((self.strings is not None) and (len(self.strings) > 0) and (len(self.oldvalue) > 0))
+        return (
+            (self.strings is not None)
+            and (len(self.strings) > 0)
+            and (len(self.oldvalue) > 0)
+        )
 
     def validate(self) -> ParameterValidationResult:
         reasons = []
@@ -193,6 +201,7 @@ class Replace(ProcessingUnit[None, ReplaceInput, ReplaceOutput]):
                 return original.replace(
                     param.oldvalue, param.newvalue, param.maxreplace
                 )
+
         print(f"{self.context.pool}")
         # parallize the replace tasks using the resource Pool given by the master process
         results = self.context.pool.map(replace, param.strings)

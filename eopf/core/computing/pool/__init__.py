@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import functools
+import sys
+import threading
+import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from socket import socket
-import sys
-import threading
 from time import sleep, time
 from typing import (
     Any,
@@ -21,16 +22,16 @@ from typing import (
     cast,
 )
 from uuid import uuid4
-import uuid
 
+import more_itertools as mitertools  # type: ignore
 import ray  # type: ignore
-from dask_cuda import LocalCUDACluster  # type: ignore
 from dask.distributed import Client  # type: ignore
 from dask.distributed import LocalCluster as DaskLocalClutster  # type: ignore
+from dask_cuda import LocalCUDACluster  # type: ignore
 from distributed.client import Future  # type: ignore # type: ignore
-from ray.util.queue import Queue, Empty  # type: ignore
+from eopf.core.production.configuration import Parameter, ParameterValidationResult
 from ray.exceptions import RayActorError  # type: ignore
-import more_itertools as mitertools  # type: ignore
+from ray.util.queue import Empty, Queue  # type: ignore
 
 _InputType = TypeVar("_InputType")
 _OutputType = TypeVar("_OutputType")
@@ -493,52 +494,15 @@ class LocalPoolAPI(PoolAPI):
         self.initialized = False
 
 
-class DistributedPoolAPI(PoolAPI):
-    """Defines the API of a distribued Pool of resources (resources are distributed over a cluster of machine)
-    """
+@dataclass
+class PoolDescription(Parameter):
+    n_worker: Optional[int] = 0
+    n_cpu_per_worker: Optional[int] = 0
+    memory_limit_per_worker: Optional[float] = 0
+    n_gpu_per_worker: Optional[float] = 0
 
-    def __init__(
-        self,
-        n_worker: int,
-        n_cpu_per_worker: int,
-        memory_limit_per_worker: float,
-        n_gpu_per_worker: float,
-        local_pool_class: Type[LocalPoolAPI],
-    ) -> None:
-        """DistributedPoolAPI constructor
-
-        :param n_worker: number of worker to deploy on the cluster
-        :type n_worker: int
-        :param n_cpu_per_worker: number of cpu per worker
-        :type n_cpu_per_worker: int
-        :param memory_limit_per_worker: limit of memory, in GB, a worker can use
-        :type memory_limit_per_worker: float
-        :param n_gpu_per_worker: number of gpu per worker, can be a fraction of gpu
-        :type n_gpu_per_worker: float
-        :param local_pool_class: class of the LocalPool to use on the workers
-        :type local_pool_class: Type[LocalPoolAPI]
-        """
-        self.n_worker = n_worker
-        self.n_cpu_per_worker = n_cpu_per_worker
-        self.memory_limit_per_worker = memory_limit_per_worker
-        self.n_gpu_per_worker = n_gpu_per_worker
-        self.local_pool_class = local_pool_class
-
-    def create_local_pool(
-        self, n_cpu: int = 0, memory_limit: float = 0, n_visible_gpu: List[int] = []
-    ) -> LocalPoolAPI:
-        """Create a lazy local resource Pool to use on a worker
-
-        :param n_cpu: number of CPU of this resource pool, when n_cpu is 0 all the logical cores available on the machine are used, defaults to 0
-        :type n_cpu: int, optional
-        :param n_visible_gpu: number of visible GPU from this resource Pool, defaults to 0
-        :type n_visible_gpu: int, optional
-        :param lazy: when lazy is True the resources are not allocated when constructing the Pool but only when a first call is made on a mehtod of the Pool. Subsequent calls to Pool mehtods must not reallocate resources, defaults to False
-        :type lazy: bool, optional
-        :return: a LocalPoolAPI
-        :rtype: LocalPoolAPI
-        """
-        return self.local_pool_class(n_cpu, memory_limit, n_visible_gpu)
+    def validate(self) -> ParameterValidationResult:
+        return ParameterValidationResult(is_ok=True)
 
 
 class DaskAsyncResult(AsyncResult):
@@ -674,6 +638,54 @@ class LocalPool(LocalPoolAPI):
         __doc__ = LocalPoolAPI.__init__.__doc__  # noqa: F841
         assert self.client is not None
         self.client.close()
+
+
+class DistributedPoolAPI(PoolAPI):
+    """Defines the API of a distribued Pool of resources (resources are distributed over a cluster of machine)
+    """
+
+    def __init__(
+        self,
+        n_worker: int,
+        n_cpu_per_worker: int,
+        memory_limit_per_worker: float,
+        n_gpu_per_worker: Optional[float] = None,
+        local_pool_class: Type[LocalPoolAPI] = LocalPool,
+    ) -> None:
+        """DistributedPoolAPI constructor
+
+        :param n_worker: number of worker to deploy on the cluster
+        :type n_worker: int
+        :param n_cpu_per_worker: number of cpu per worker
+        :type n_cpu_per_worker: int
+        :param memory_limit_per_worker: limit of memory, in GB, a worker can use
+        :type memory_limit_per_worker: float
+        :param n_gpu_per_worker: number of gpu per worker, can be a fraction of gpu
+        :type n_gpu_per_worker: float
+        :param local_pool_class: class of the LocalPool to use on the workers
+        :type local_pool_class: Type[LocalPoolAPI]
+        """
+        self.n_worker = n_worker
+        self.n_cpu_per_worker = n_cpu_per_worker
+        self.memory_limit_per_worker = memory_limit_per_worker
+        self.n_gpu_per_worker = n_gpu_per_worker
+        self.local_pool_class = local_pool_class
+
+    def create_local_pool(
+        self, n_cpu: int = 0, memory_limit: float = 0, n_visible_gpu: List[int] = []
+    ) -> LocalPoolAPI:
+        """Create a lazy local resource Pool to use on a worker
+
+        :param n_cpu: number of CPU of this resource pool, when n_cpu is 0 all the logical cores available on the machine are used, defaults to 0
+        :type n_cpu: int, optional
+        :param n_visible_gpu: number of visible GPU from this resource Pool, defaults to 0
+        :type n_visible_gpu: int, optional
+        :param lazy: when lazy is True the resources are not allocated when constructing the Pool but only when a first call is made on a mehtod of the Pool. Subsequent calls to Pool mehtods must not reallocate resources, defaults to False
+        :type lazy: bool, optional
+        :return: a LocalPoolAPI
+        :rtype: LocalPoolAPI
+        """
+        return self.local_pool_class(n_cpu, memory_limit, n_visible_gpu)
 
 
 @dataclass

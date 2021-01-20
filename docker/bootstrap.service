@@ -2,9 +2,9 @@
 Description=Bootstrap Services
 
 [Service]
-EnvironmentFile=/env
+PassEnvironment=PATH USERNAME USERFULLNAME PYTHONPATH AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION
 Type=simple
-ExecStart=/sbin/start.sh
+ExecStart=/bin/bash -c "/sbin/start.sh"
 
 [Install]
 WantedBy=multi-user.target

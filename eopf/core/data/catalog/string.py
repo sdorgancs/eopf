@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from eopf.core.data.catalog import (
-    FeaturePropertyPredicate,
-    FeaturePropertyTransformation,
-)
+from eopf.core.data.catalog import (FeaturePropertyPredicate,
+                                    FeaturePropertyTransformation)
 
 
 class StringPredicate(FeaturePropertyPredicate):

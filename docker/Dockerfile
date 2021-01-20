@@ -65,7 +65,7 @@ ENV USER eopfdev
 
 ENV PATH /usr/local/devtools/bin:${PATH}
 
-
+RUN conda install pip -y
 # Install JupyterLab
 RUN conda install -c conda-forge -y jupyterlab
 

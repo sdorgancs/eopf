@@ -4,7 +4,6 @@ services:
     build: ./docker
     ports:
       - 80:80
-      - 443:443
     environment:
       - USERNAME=toto
       - USERFULLNAME="toto toto"
@@ -20,3 +19,5 @@ services:
       - SYS_PTRACE
     security_opt:
       - seccomp:unconfined
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro

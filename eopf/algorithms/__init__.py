@@ -1,32 +1,20 @@
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from logging import Logger
 from typing import Generic, List, Optional, Type, TypeVar, Union, get_args
 
-from dataclasses_jsonschema import JsonSchemaMixin
 from eopf.core.computing.pool import PoolAPI
 from eopf.core.production import configuration
+from eopf.core.production.configuration import Parameter
 
+Configuration = TypeVar("Configuration", bound=Union[Parameter, None])
+"""Generic Algorithm configuration parameters"""
 
-@dataclass
-class ParameterValidationResult:
-    """Parameters validation result"""
+Input = TypeVar("Input", bound=Parameter)
+"""Generic Algorithm input parameter bound to Parameter abstract class"""
 
-    is_ok: bool
-    reasons: List[str] = field(default_factory=list)
-
-
-class Parameter(ABC, JsonSchemaMixin):
-    """Base abstract class for Algorithm input and output parameters"""
-
-    @abstractmethod
-    def validate(self) -> ParameterValidationResult:
-        """Test if the parameter is valid
-
-        :return: True if the parameter is valid
-        :rtype: bool
-        """
+Output = TypeVar("Output", bound=Parameter)
+"""Generic Algorithm input parameter bound to Parameter abstract class"""
 
 
 class InvalidParameter(Exception):
@@ -51,16 +39,6 @@ class InvalidOutputParameter(InvalidParameter):
 
 class InvalidConfigurationParameter(InvalidParameter):
     """Exception raised when a configuration parameter is invalid"""
-
-
-Configuration = TypeVar("Configuration", bound=Union[Parameter, None])
-"""Generic Algorithm configuration parameters"""
-
-Input = TypeVar("Input", bound=Parameter)
-"""Generic Algorithm input parameter bound to Parameter abstract class"""
-
-Output = TypeVar("Output", bound=Parameter)
-"""Generic Algorithm input parameter bound to Parameter abstract clas"""
 
 
 class ProcessingContext:

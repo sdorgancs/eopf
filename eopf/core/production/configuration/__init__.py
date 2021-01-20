@@ -1,11 +1,33 @@
-from dataclasses import dataclass
-from genericpath import exists
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Type, TypeVar
+from typing import List, Optional, Type, TypeVar
 
+from dataclasses_jsonschema import JsonSchemaMixin
+from genericpath import exists
 from serde import from_dict  # type: ignore
 from serde import deserialize, serialize
 from serde.toml import TomlDeserializer  # type: ignore
+
+
+@dataclass
+class ParameterValidationResult:
+    """Parameters validation result"""
+
+    is_ok: bool
+    reasons: List[str] = field(default_factory=list)
+
+
+class Parameter(ABC, JsonSchemaMixin):
+    """Base abstract class for Algorithm input and output parameters"""
+
+    @abstractmethod
+    def validate(self) -> ParameterValidationResult:
+        """Test if the parameter is valid
+
+        :return: True if the parameter is valid
+        :rtype: bool
+        """
 
 
 def config_file_name(afqn: str) -> str:

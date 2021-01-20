@@ -1,11 +1,9 @@
 #!/bin/bash
 function start_services {
-    # systemctl enable desktop.service
     systemctl enable codeserver.service
-    # systemctl enable rstudio.service
     systemctl enable jupyterlab.service
+
     systemctl start codeserver.service
-    # systemctl start rstudio.service
     systemctl start jupyterlab.service
 }
 
@@ -21,8 +19,13 @@ function rename_user {
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/jupyterlab.service
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/codeserver.service
     echo "export USER=${USERNAME}" > /home/${USERNAME}/.local/user_env.sh
-    echo "export PATH=/home/${USERNAMME}/.local/bin" >> /home/${USERNAME}/.local/user_env.sh
-    echo "source /home/${USERNAME}/.local/user_env.sh" /home/${USERNAME}/.bashrc
+    echo "export USERFULLNAME=${USERFULLNAME}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export PYTHONPATH=${PYTHONPATH}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export PATH=/home/${USERNAME}/.local/bin:\${PATH}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "source /home/${USERNAME}/.local/user_env.sh" >> /home/${USERNAME}/.bashrc
 }
 
 rename_user

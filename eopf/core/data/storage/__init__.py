@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-import stat
 import shutil
+import stat
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import IntEnum
@@ -19,6 +19,7 @@ from fs_s3fs import S3FS  # type: ignore
 class BasicAuthentication:
     """BasicAuthentication is used to connect services using a username/password pair (LDAP, SQL Database, ...)
     """
+
     username: str
     password: str
 
@@ -27,6 +28,7 @@ class BasicAuthentication:
 class AuthenticationByToken:
     """AuthenticationByToken is used to connect services using authentication token (OpenID, OAuth2, Kerberos...)
     """
+
     token: str
 
 
@@ -212,7 +214,7 @@ class MuliStorage(StorageAPI):
 
         # TODO remove this patch when when https://github.com/PyFilesystem/s3fs/issues/83 is closed
         if isinstance(self.remote_fs, S3FS):
-            from urllib.parse import urlparse, parse_qs
+            from urllib.parse import parse_qs, urlparse
 
             url = urlparse(service_url)
             params = parse_qs(url.query)

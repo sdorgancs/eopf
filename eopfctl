@@ -6,7 +6,7 @@ from traceback import print_exc
 import click
 
 from eopf.algorithms import ProcessingContext
-from eopf.core.computing.pool import DistributedPool, LocalPool
+from eopf.core.computing.pool import DistributedPool, PoolDescription
 from eopf.core.production.triggering import import_algorithms, registry
 
 
@@ -15,7 +15,7 @@ def cli():
     pass
 
 
-@cli.command(help="List registered algorithms")
+@cli.command(help="List registered processing units")
 def list():
     for algo in registry.algorithms:
         print(algo)
@@ -23,7 +23,7 @@ def list():
 
 schemahelp = """Prints processing unit json schema on STDOUT
 \nArguments:
-\n\t- PU is the name of the processing unit
+\n\t- ALGORITHM is the name of the processing unit
 """
 
 
@@ -46,7 +46,7 @@ def schema(algorithm):
 
 describehelp = """Print the description of an processing unit on STDOUT
 \nArguments:
-\n\t- PU is the name of the processing unit to describe
+\n\t- ALGORITHM is the name of the processing unit to describe
 """
 
 
@@ -67,7 +67,7 @@ runhelp = """Runs a processing unit
 \n\t- ALGORITHM is the name of the processing unit to run, to display available processing units one can use 'list' command
 \n\t- INPUT_FILE is a json file containing processing unit input parameters
 \n\t- OUTPUT_FILE is a json file where the result of the processing unit execution is written
-\nIf an error occurs during the execution of the processing unit, exit status of the command is not zero and the error analysis is written in OUTPUT_FILE.error
+\nIf an error occurs during the execution of the processing unit, exit status of the command is not zero and the error analysis is written in stderr
 """
 
 
@@ -81,17 +81,19 @@ runhelp = """Runs a processing unit
     help="a URL to a json file describing the resource pool configuration.\n"
     + "By default the algorithm is executed locally and uses the maximum available resources.",
 )
-def run(algorithm, input_file, output_file, use_ray):
+def run(algorithm, input_file, output_file, resources):
     try:
         if algorithm in registry.algorithms:
             algo = registry.algorithms[algorithm]
             with open(input_file) as fi:
                 input_class = algo.input_class()
                 param = input_class.from_json(fi.read(), validate=True)
-                if use_ray:
-                    context = ProcessingContext(DistributedPool(), None)
+                if resources:
+                    with open(resources) as fr:
+                        pool_desc = PoolDescription.from_json(fr.read(), validate=True)
+                        context = ProcessingContext(DistributedPool(**pool_desc.to_dict()), None)
                 else:
-                    context = ProcessingContext(LocalPool(), None)
+                    context = ProcessingContext(DistributedPool(), None)
                 output = algo(context)(param)
                 jsoutout = output.to_json()
                 with open(output_file, "w") as fo:
@@ -113,7 +115,9 @@ def run(algorithm, input_file, output_file, use_ray):
 
 if __name__ == "__main__":
     import logging
-
+    import ray
+    ray.init()
     logging.basicConfig(filename="eopf_cli.log", level=logging.INFO)
     import_algorithms()
     cli()
+    ray.shutdown()

@@ -1,8 +1,9 @@
 from typing import Dict, Type
+
 from eopf.algorithms import ProcessingUnit
 
 
-class AlgorithmRegistry:
+class ProcessingUnitRegistry:
     def __init__(self) -> None:
         self.algorithms: Dict[str, Type[ProcessingUnit]] = dict()
 
@@ -13,7 +14,7 @@ class AlgorithmRegistry:
         pass
 
 
-registry = AlgorithmRegistry()
+registry = ProcessingUnitRegistry()
 
 
 def expose(algo: Type[ProcessingUnit]) -> Type[ProcessingUnit]:
@@ -23,8 +24,9 @@ def expose(algo: Type[ProcessingUnit]) -> Type[ProcessingUnit]:
 
 
 def import_algorithms():
-    from pkgutil import walk_packages
     from importlib import import_module
+    from pkgutil import walk_packages
+
     from eopf import algorithms
 
     for m in walk_packages(algorithms.__path__, algorithms.__name__ + "."):

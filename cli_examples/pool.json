@@ -1,0 +1,6 @@
+{
+    "n_worker": 2,
+    "n_cpu_per_worker": 2,
+    "memory_limit_per_worker": 0,
+    "n_gpu_per_worker": 0
+}

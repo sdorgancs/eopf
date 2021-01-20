@@ -1,9 +1,11 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from eopf.core.data.storage import Credentials
 from typing import Any, Dict, List, Optional
+
 import geojson  # type: ignore
-from abc import ABC, abstractmethod
+
+from eopf.core.data.storage import Credentials
 
 
 class Geometry(geojson.GeoJSON):
