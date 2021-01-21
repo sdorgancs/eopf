@@ -1,0 +1,12 @@
+[Unit]
+Description=Ray cluster
+
+[Service]
+Type=simple
+ExecStart=/usr/local/devtools/envs/eopf/bin/ray start --head --block --dashboard-host 0.0.0.0
+User=USER
+Group=USER
+WorkingDirectory=/home/USER
+
+[Install]
+WantedBy=multi-user.target

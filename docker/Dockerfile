@@ -79,6 +79,7 @@ ADD jupyter_notebook_config.py /usr/local/devtools/etc/jupyter/jupyter_notebook_
 ## git
 RUN code-server --install-extension eamodio.gitlens
 ## Python
+RUN code-server --install-extension ms-python.python
 RUN code-server --install-extension donjayamanne.python-extension-pack
 RUN code-server --install-extension LittleFoxTeam.vscode-python-test-adapter
 RUN code-server --install-extension njpwerner.autodocstring
@@ -101,6 +102,8 @@ RUN git clone https://github.com/sdorgancs/eopf.git
 RUN conda env create -f eopf/environment.yml
 # Make RUN commands use the new environment:
 SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
+RUN conda init bash
+
 # Configure services
 USER root
 WORKDIR /
@@ -109,10 +112,14 @@ RUN mv caddy /usr/local/bin
 RUN mkdir -p /usr/local/lib/caddy
 ADD Caddyfile /usr/local/lib/caddy/Caddyfile
 
+
 ADD caddy.service /etc/systemd/system/caddy.service
 ADD bootstrap.service /etc/systemd/system/bootstrap.service
 ADD jupyterlab.service /etc/systemd/system/jupyterlab.service
 ADD codeserver.service /etc/systemd/system/codeserver.service
+ADD ray.service /etc/systemd/system/ray.service
+RUN mkdir -p /var/www/ui
+ADD dashboard /var/www/ui
 
 RUN systemctl enable /etc/systemd/system/caddy.service
 RUN systemctl enable /etc/systemd/system/bootstrap.service

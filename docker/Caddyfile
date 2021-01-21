@@ -1,4 +1,16 @@
 localhost:80 {
+    log {
+        output file /var/log/caddy-access.log {
+            roll_size 1gb
+            roll_keep 5
+            roll_keep_for 720h
+            level DEBUG
+        }
+    
+    }
+    root * /var/www
+    file_server /ui*
+
     route /notebooks* {
         reverse_proxy 127.0.0.1:8080
     }
@@ -7,7 +19,24 @@ localhost:80 {
         uri strip_prefix /code
         reverse_proxy 127.0.0.1:8081
     }
+    @not_ui {
+	    not path /ui/*
+        path /*
+    }
+# caddy validate --config usr/local/lib/caddy/Caddyfile
+    route @not_ui {
+        reverse_proxy 127.0.0.1:8265
+    }
+
     redir /code     /code/
     redir /notebooks /notebooks/
-   
+    redir /dashboard /dashboard/
+    redir /ui     /ui/
+
+    header -X-Frame-Options
+    header -Content-Security-Policy 
+
 }
+
+
+

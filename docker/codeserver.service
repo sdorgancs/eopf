@@ -3,6 +3,8 @@ Description=Code Server IDE
 
 [Service]
 Type=simple
+PassEnvironment=SHELL PATH
+ExecStartPre=/usr/local/devtools/bin/conda init bash
 ExecStart=/usr/local/devtools/bin/code-server --bind-addr=0.0.0.0:8081 --auth=none
 User=USER
 Group=USER

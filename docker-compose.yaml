@@ -2,8 +2,11 @@ version: "3.8"
 services:
   eopdsde:
     build: ./docker
+    shm_size: "1gb"
+    hostname: eopfdev
     ports:
       - 80:80
+      - 8265:8265
     environment:
       - USERNAME=toto
       - USERFULLNAME="toto toto"
