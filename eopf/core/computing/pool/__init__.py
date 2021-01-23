@@ -938,7 +938,7 @@ class DistributedPool(DistributedPoolAPI):
                         del self.processed_results[result.task_id]
                 except Empty:
                     continue
-                except RayActorError:
+                except (RayActorError, AttributeError):
                     break
 
         self.result_consumer_thread = threading.Thread(target=consume_result_queue)

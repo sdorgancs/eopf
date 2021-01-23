@@ -4,23 +4,19 @@ services:
     build: ./docker
     shm_size: "1gb"
     hostname: eopfdev
+    privileged: true
     ports:
       - 80:80
       - 8265:8265
     environment:
       - USERNAME=toto
       - USERFULLNAME="toto toto"
-      - PYTHONPATH=/home/toto
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_DEFAULT_REGION=us-east-1
     tmpfs:
       - /run
       - /run/lock
       - /tmp
-    cap_add:
-      - SYS_PTRACE
     security_opt:
       - seccomp:unconfined
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /tmp/docker:/var/lib/docker

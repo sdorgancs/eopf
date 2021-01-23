@@ -5,7 +5,7 @@ from eopf.core.computing.pool import DistributedPool, PoolTask, star_wrap
 
 @pytest.fixture(scope="session")
 def ditributed_cluster():
-    ray.init()
+    ray.init("auto")
     yield DistributedPool(2, 4)
     ray.shutdown()
 
