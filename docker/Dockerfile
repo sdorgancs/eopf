@@ -87,16 +87,20 @@ ADD jupyter_notebook_config.py /usr/local/devtools/etc/jupyter/jupyter_notebook_
 
 
 # Install code-server extensions
-## git
-RUN code-server --install-extension eamodio.gitlens
-## Python
-RUN code-server --install-extension ms-python.python
-RUN code-server --install-extension donjayamanne.python-extension-pack
-RUN code-server --install-extension LittleFoxTeam.vscode-python-test-adapter
-RUN code-server --install-extension njpwerner.autodocstring
-## Jupyter
-RUN code-server --install-extension ms-toolsai.jupyter
-## Markdown
+
+## Python https://github.com/cdr/code-server/issues/2341
+RUN curl -L https://github.com/microsoft/vscode-python/releases/download/2020.10.332292344/ms-python-release.vsix \
+  -o ms-python-release.vsix
+RUN code-server --install-extension ./ms-python-release.vsix --force || true
+# RUN rm ms-python-release.vsix
+# # RUN code-server --install-extension donjayamanne.python-extension-pack
+# # RUN code-server --install-extension LittleFoxTeam.vscode-python-test-adapter
+# RUN code-server --install-extension njpwerner.autodocstring
+# ## Jupyter https://github.com/cdr/code-server/issues/2293
+# # RUN curl -L https://marketplace.visualstudio.com/_apis/public/gallery/publishers/ms-toolsai/vsextensions/jupyter/2020.12.414227025/vspackage \
+# #   -o ms-toolsai.jupyter.vsix
+# # RUN code-server --install-extension ./ms-toolsai.jupyter.vsix --force || true
+# ## Markdown
 RUN code-server --install-extension yzhang.markdown-all-in-one
 ## JSon
 RUN code-server --install-extension nickdemayo.vscode-json-editor
@@ -107,7 +111,7 @@ RUN code-server --install-extension redhat.vscode-yaml
 ## rst
 RUN code-server --install-extension lextudio.restructuredtext
 
-# clone eopf
+# # clone eopf
 RUN git clone https://github.com/sdorgancs/eopf.git
 
 RUN conda env create -f eopf/environment.yml
@@ -116,7 +120,7 @@ RUN conda env create -f eopf/environment.yml
 # SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
 RUN conda init bash
 
-
+# RUN mkdir /home/eopfdev/.local
 
 # Configure services
 USER root

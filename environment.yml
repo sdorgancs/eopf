@@ -13,8 +13,6 @@ dependencies:
   - zarr
   - fs
   - h5netcdf
-  - dynaconf
-  - typer
   - pyyaml
   - autopep8
   - geojson
