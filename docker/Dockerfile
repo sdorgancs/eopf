@@ -5,11 +5,11 @@ RUN apt update -y && apt upgrade -y
 
 ENV DEBIAN_FRONTEND=noninteractive 
 RUN  apt update -y && apt install -y --no-install-recommends curl git sudo build-essential \
-                   lldb python dirmngr gnupg \
-                   apt-transport-https ca-certificates software-properties-common \
-                   systemd dbus systemd systemd-cron rsyslog iproute2 libnss3 \
-                   locales \
-                   && apt clean -y
+  lldb python dirmngr gnupg \
+  apt-transport-https ca-certificates software-properties-common \
+  systemd dbus systemd systemd-cron rsyslog iproute2 libnss3 \
+  locales \
+  && apt clean -y
 
 # Free a bit of space
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -19,16 +19,18 @@ ENV container docker LANG=C.UTF-8
 
 ## configure rsyslog
 RUN sed -i 's/^\(module(load="imklog")\)/#\1/' /etc/rsyslog.conf
-
+ENV container docker
 ## remove systemd unnecessary services
-RUN find /etc/systemd/system \
-    /lib/systemd/system \
-    -path '*.wants/*' \
-    -not -name '*dbus*' \
-    -not -name '*journald*' \
-    -not -name '*systemd-tmpfiles*' \
-    -not -name '*systemd-user-sessions*' \
-    -exec rm \{} \;
+
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+  systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+  rm -f /lib/systemd/system/multi-user.target.wants/*; \
+  rm -f /etc/systemd/system/*.wants/*; \
+  rm -f /lib/systemd/system/local-fs.target.wants/*; \
+  rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+  rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+  rm -f /lib/systemd/system/basic.target.wants/*;
+
 
 RUN systemctl set-default multi-user.target
 RUN systemctl mask dev-hugepages.mount sys-fs-fuse-connections.mount
@@ -41,6 +43,7 @@ STOPSIGNAL SIGRTMIN+3
 # The user needs to sudoer be able to install code-server
 RUN adduser --gecos '/usr/bin/bash' --disabled-password eopfdev && \
   echo "eopfdev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/nopasswd
+RUN groupadd docker && usermod -aG docker eopfdev
 ENV SHELL bash
 
 # Install miniconda
@@ -54,6 +57,14 @@ RUN curl -fsSL https://code-server.dev/install.sh > install.sh
 RUN sh install.sh --method=standalone --prefix=/usr/local/devtools
 RUN rm -f install.sh
 
+# Install docker
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+RUN apt-key fingerprint 0EBFCD88
+RUN add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+RUN apt update -y && apt install -y docker-ce docker-ce-cli containerd.io
 
 RUN chown -R eopfdev:eopfdev /usr/local/devtools
 
@@ -65,9 +76,9 @@ ENV USER eopfdev
 
 ENV PATH /usr/local/devtools/bin:${PATH}
 
-RUN conda install pip -y
-# Install JupyterLab
-RUN conda install -c conda-forge -y jupyterlab
+# RUN conda install pip -y
+# # Install JupyterLab
+# RUN conda install -c conda-forge -y jupyterlab
 
 # Install JupyterLab extensions
 RUN conda install -y ipykernel
@@ -100,8 +111,9 @@ RUN code-server --install-extension lextudio.restructuredtext
 RUN git clone https://github.com/sdorgancs/eopf.git
 
 RUN conda env create -f eopf/environment.yml
-# Make RUN commands use the new environment:
-SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
+
+
+# SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
 RUN conda init bash
 
 # Configure services
@@ -118,12 +130,15 @@ ADD bootstrap.service /etc/systemd/system/bootstrap.service
 ADD jupyterlab.service /etc/systemd/system/jupyterlab.service
 ADD codeserver.service /etc/systemd/system/codeserver.service
 ADD ray.service /etc/systemd/system/ray.service
+
 RUN mkdir -p /var/www/ui
 ADD dashboard /var/www/ui
 
 RUN systemctl enable /etc/systemd/system/caddy.service
 RUN systemctl enable /etc/systemd/system/bootstrap.service
-
+RUN systemctl enable docker
+RUN apt update -y && apt install uidmap -y
 ADD start.sh /sbin
 RUN chmod u+x /sbin/start.sh
+VOLUME /home
 CMD ["/sbin/init"]

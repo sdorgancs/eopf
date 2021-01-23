@@ -135,7 +135,4 @@ dask-worker-space
 # test logs
 *.log
 
-# vs code project files
-.vscode
-
 scripts/mc
