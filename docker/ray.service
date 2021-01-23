@@ -6,7 +6,7 @@ Type=simple
 ExecStart=/usr/local/devtools/envs/eopf/bin/ray start --head --block --dashboard-host 0.0.0.0
 User=USER
 Group=USER
-WorkingDirectory=/home/USER
+WorkingDirectory=/home/USER/.local
 
 [Install]
 WantedBy=multi-user.target
