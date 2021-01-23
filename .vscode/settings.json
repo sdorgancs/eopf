@@ -1,5 +1,4 @@
 {
-    "python.pythonPath": "/home/sebastien/miniconda3/envs/eopf/bin/python",
     "python.linting.mypyEnabled": true,
     "python.linting.enabled": true,
     "python.linting.flake8Args": [
