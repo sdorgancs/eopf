@@ -4,7 +4,7 @@ echo "starting fake S3 server"
 export SERVICES=s3:5000
 export DEFAULT_REGION=us-east-1
 
-docker run -d -p 5000:5000 -p 8080:8080 \
+docker run -d -p 5000:5000 \
     -e SERVICES \
     -e DEFAULT_REGION \
     --name s3-test \
