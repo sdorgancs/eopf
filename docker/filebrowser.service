@@ -1,0 +1,13 @@
+[Unit]
+Description=File browser
+
+[Service]
+Type=simple
+PassEnvironment=SHELL PATH
+ExecStart=/usr/local/bin/filebrowser -r /home/USER --database=/home/USER/.local/filebrowser.db
+User=USER
+Group=USER
+WorkingDirectory=/home/USER
+
+[Install]
+WantedBy=multi-user.target

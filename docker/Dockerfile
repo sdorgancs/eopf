@@ -116,7 +116,20 @@ RUN conda env create -f eopf/environment.yml
 # SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
 RUN conda init bash
 
+
+
 # Configure services
+USER root
+WORKDIR /
+# install file browser
+# TODO move it when ok
+RUN curl -fsSL https://filebrowser.org/get.sh | bash
+RUN chmod a+x /usr/local/bin/filebrowser
+USER eopfdev
+WORKDIR /home/eopfdev/.local
+RUN /usr/local/bin/filebrowser config init --baseurl /browser --auth.method=noauth --port=8888
+# https://github.com/filebrowser/filebrowser/issues/700
+RUN /usr/local/bin/filebrowser users add "default-user" "default-password"
 USER root
 WORKDIR /
 RUN curl -L https://github.com/caddyserver/caddy/releases/download/v2.2.1/caddy_2.2.1_linux_amd64.tar.gz | tar -xvz
@@ -125,11 +138,13 @@ RUN mkdir -p /usr/local/lib/caddy
 ADD Caddyfile /usr/local/lib/caddy/Caddyfile
 
 
+
 ADD caddy.service /etc/systemd/system/caddy.service
 ADD bootstrap.service /etc/systemd/system/bootstrap.service
 ADD jupyterlab.service /etc/systemd/system/jupyterlab.service
 ADD codeserver.service /etc/systemd/system/codeserver.service
 ADD ray.service /etc/systemd/system/ray.service
+ADD filebrowser.service /etc/systemd/system/filebrowser.service
 
 RUN mkdir -p /var/www/ui
 ADD dashboard /var/www/ui
@@ -137,7 +152,7 @@ ADD dashboard /var/www/ui
 RUN systemctl enable /etc/systemd/system/caddy.service
 RUN systemctl enable /etc/systemd/system/bootstrap.service
 RUN systemctl enable docker
-RUN apt update -y && apt install uidmap -y
+
 ADD start.sh /sbin
 RUN chmod u+x /sbin/start.sh
 VOLUME /home

@@ -18,6 +18,21 @@ localhost:80 {
         reverse_proxy 127.0.0.1:8081
     }
 
+
+    route /browser* {
+        reverse_proxy 127.0.0.1:8888
+    }
+
+    @code_callbacks {
+        path_regexp callback \./usr/local/devtools/lib/code-server\.
+    }
+
+
+    route @code_callbacks {
+        reverse_proxy 127.0.0.1:8081
+    }
+
+
     route /code* {
         uri strip_prefix /code
         reverse_proxy 127.0.0.1:8081

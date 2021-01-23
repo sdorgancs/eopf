@@ -3,17 +3,13 @@ function start_services {
     systemctl enable codeserver.service
     systemctl enable jupyterlab.service
     systemctl enable ray.service
+    systemctl enable filebrowser.service
 
     systemctl start codeserver.service
     systemctl start jupyterlab.service
     systemctl start ray.service
+    systemctl start filebrowser.service
 }
-
-
-
-
-
-
 
 
 function rename_user {
@@ -26,12 +22,13 @@ function rename_user {
     usermod -aG docker ${USERFULLNAME}
     id $1
 
-    echo "${USERNAME}:100000:65536" > /etc/subgid
-    echo "${USERNAME}:100000:65536" > /etc/subuid
+    # echo "${USERNAME}:100000:65536" > /etc/subgid
+    # echo "${USERNAME}:100000:65536" > /etc/subuid
 
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/jupyterlab.service
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/codeserver.service
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/ray.service
+    sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/filebrowser.service
 
     echo "export USER=${USERNAME}" > /home/${USERNAME}/.local/user_env.sh
     echo "export USERFULLNAME=${USERFULLNAME}" >> /home/${USERNAME}/.local/user_env.sh

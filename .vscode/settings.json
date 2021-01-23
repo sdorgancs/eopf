@@ -12,5 +12,4 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "editor.fontSize": 13,
-    "workbench.colorTheme": "Default Dark+"
 }

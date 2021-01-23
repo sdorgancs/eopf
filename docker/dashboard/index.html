@@ -53,6 +53,12 @@
                         </a>
                         <a 
                             class="button"
+                            onclick="switch_frame('browser')"
+                        >
+                        Browser
+                        </a>
+                        <a 
+                            class="button"
                             onclick="switch_frame('dashboard')"
                         >
                         Dashboard
@@ -65,9 +71,10 @@
     <hr style="width:100%;text-align:left;margin:0">
     <iframe id="code" src="../code/" class="visible"></iframe>
     <iframe id="notebooks" src="../notebooks/" class="hidden"></iframe>
+    <iframe id="browser" src="../browser" class="hidden"></iframe>
     <iframe id="dashboard" src="/" class="hidden"></iframe>
      <script type="text/javascript">
-        var elements = ["code", "notebooks", "dashboard"]
+        var elements = ["code", "notebooks", "browser", "dashboard"]
         function switch_frame(frame) {
             elements.forEach(f => {
                 elt = document.getElementById(f);
