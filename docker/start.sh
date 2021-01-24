@@ -30,15 +30,20 @@ function rename_user {
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/ray.service
     sed -i "s/USER/${USERNAME}/g" /etc/systemd/system/filebrowser.service
 
+    sed -i "s/USER/${USERNAME}/g" /home/${USERNAME}/eopf/.env
+
     echo "export USER=${USERNAME}" > /home/${USERNAME}/.local/user_env.sh
     echo "export USERFULLNAME=${USERFULLNAME}" >> /home/${USERNAME}/.local/user_env.sh
     echo "export PYTHONPATH=/home/${USERNAME}/eopf" >> /home/${USERNAME}/.local/user_env.sh
     echo "export AWS_ACCESS_KEY_ID=test" >> /home/${USERNAME}/.local/user_env.sh
     echo "export AWS_SECRET_ACCESS_KEY=test" >> /home/${USERNAME}/.local/user_env.sh
     echo "export AWS_DEFAULT_REGION=us-east-1" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export GIT_AUTHOR_NAME=${USERFULLNAME}" >> /home/${USERNAME}/.local/user_env.sh
+    echo "export GIT_AUTHOR_EMAIL=${USEREMAIL}" >> /home/${USERNAME}/.local/user_env.sh
     echo "export PATH=/home/${USERNAME}/bin:/home/${USERNAME}/.local/bin:/usr/local/devtools/bin:\${PATH}" >> /home/${USERNAME}/.local/user_env.sh
     echo "conda activate eopf" >> /home/${USERNAME}/.local/user_env.sh
     echo "source /home/${USERNAME}/.local/user_env.sh" >> /home/${USERNAME}/.bashrc
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/eopf
 }
 
 rename_user

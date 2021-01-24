@@ -135,4 +135,8 @@ dask-worker-space
 # test logs
 *.log
 
+# mc utility
 scripts/mc
+
+# code-server help
+code-server.txt

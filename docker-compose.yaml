@@ -9,8 +9,9 @@ services:
       - 80:80
       - 8265:8265
     environment:
-      - USERNAME=toto
-      - USERFULLNAME="toto toto"
+      - USERNAME=sebastien
+      - USERFULLNAME="Sebastien Dorgan"
+      - USEREMAIL=sebastien.dorgan@csgroup.eu
     tmpfs:
       - /run
       - /run/lock

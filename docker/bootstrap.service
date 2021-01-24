@@ -2,7 +2,7 @@
 Description=Bootstrap Services
 
 [Service]
-PassEnvironment=SHELL PATH USERNAME USERFULLNAME PYTHONPATH AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_DEFAULT_REGION
+PassEnvironment=SHELL PATH USERNAME USERFULLNAME USEREMAIL PYTHONPATH
 Type=simple
 ExecStart=/bin/bash -c "/sbin/start.sh"
 

@@ -88,8 +88,9 @@ ADD jupyter_notebook_config.py /usr/local/devtools/etc/jupyter/jupyter_notebook_
 
 # Install code-server extensions
 
-## Python https://github.com/cdr/code-server/issues/2341
-RUN curl -L https://github.com/microsoft/vscode-python/releases/download/2020.10.332292344/ms-python-release.vsix \
+# Python https://github.com/cdr/code-server/issues/2341
+# https://github.com/microsoft/vscode-python/issues/14579
+RUN curl -L https://github.com/microsoft/vscode-python/releases/download/2020.9.114305/ms-python-release.vsix \
   -o ms-python-release.vsix
 RUN code-server --install-extension ./ms-python-release.vsix --force || true
 # RUN rm ms-python-release.vsix
@@ -120,7 +121,9 @@ RUN conda env create -f eopf/environment.yml
 # SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
 RUN conda init bash
 
-# RUN mkdir /home/eopfdev/.local
+ADD vscode /home/eopfdev/eopf/.vscode
+ADD env /home/eopfdev/eopf/.env
+ADD settings.json /home/eopfdev/.local/share/code-server/User
 
 # Configure services
 USER root

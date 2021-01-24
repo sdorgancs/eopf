@@ -3,7 +3,7 @@
     "python.linting.enabled": true,
     "python.linting.flake8Args": [
         "--max-line-length=250",
-        "--ignore=W503",
+        "--ignore=W503"
     ],
     "python.testing.pytestArgs": [
         "tests"
@@ -12,5 +12,8 @@
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "editor.fontSize": 13,
-    "python.pythonPath": "/home/sebastien/miniconda3/envs/eopf/bin/python",
+    "python.pythonPath": "/usr/local/devtools/envs/eopf/bin/python",
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true
 }
