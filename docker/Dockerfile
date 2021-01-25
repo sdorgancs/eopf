@@ -130,6 +130,8 @@ ADD vscode /home/eopfdev/eopf/.vscode
 ADD env /home/eopfdev/eopf/.env
 ADD settings.json /home/eopfdev/.local/share/code-server/User
 
+ADD config /home/eopfdev/.config
+
 RUN npm install -g ungit
 
 # Configure services
