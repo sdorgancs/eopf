@@ -78,12 +78,17 @@ ENV PATH /usr/local/devtools/bin:${PATH}
 
 # RUN conda install pip -y
 # # Install JupyterLab
-# RUN conda install -c conda-forge -y jupyterlab
-
-# Install JupyterLab extensions
-RUN conda install -y ipykernel
-RUN conda install -y -c conda-forge jupyterlab-git
+RUN conda install -c conda-forge -y jupyterlab nodejs nbdime nbresuse jupyterlab-git jupyter-resource-usage ipykernel
 ADD jupyter_notebook_config.py /usr/local/devtools/etc/jupyter/jupyter_notebook_config.py
+# Install JupyterLab extensions
+# RUN conda install -y ipykernel
+# RUN conda install -y -c conda-forge 
+ADD jupyter_notebook_config.py /usr/local/devtools/etc/jupyter/jupyter_notebook_config.py
+RUN jupyter serverextension enable --py nbdime --sys-prefix
+RUN jupyter labextension install nbdime-jupyterlab
+RUN jupyter serverextension enable --py nbresuse --sys-prefix
+RUN jupyter nbextension install --py nbresuse --sys-prefix
+RUN jupyter nbextension enable --py nbresuse --sys-prefix
 
 
 # Install code-server extensions
@@ -93,7 +98,7 @@ ADD jupyter_notebook_config.py /usr/local/devtools/etc/jupyter/jupyter_notebook_
 RUN curl -L https://github.com/microsoft/vscode-python/releases/download/2020.9.114305/ms-python-release.vsix \
   -o ms-python-release.vsix
 RUN code-server --install-extension ./ms-python-release.vsix --force || true
-# RUN rm ms-python-release.vsix
+RUN rm ms-python-release.vsix
 # # RUN code-server --install-extension donjayamanne.python-extension-pack
 # # RUN code-server --install-extension LittleFoxTeam.vscode-python-test-adapter
 # RUN code-server --install-extension njpwerner.autodocstring
@@ -115,21 +120,22 @@ RUN code-server --install-extension lextudio.restructuredtext
 # # clone eopf
 RUN git clone https://github.com/sdorgancs/eopf.git
 
+
+# Init conda env eopf
 RUN conda env create -f eopf/environment.yml
-
-
-# SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
+SHELL ["conda", "run", "-n", "eopf", "/bin/bash", "-c"]
 RUN conda init bash
 
 ADD vscode /home/eopfdev/eopf/.vscode
 ADD env /home/eopfdev/eopf/.env
 ADD settings.json /home/eopfdev/.local/share/code-server/User
 
+RUN npm install -g ungit
+
 # Configure services
 USER root
 WORKDIR /
 # install file browser
-# TODO move it when ok
 RUN curl -fsSL https://filebrowser.org/get.sh | bash
 RUN chmod a+x /usr/local/bin/filebrowser
 USER eopfdev
@@ -152,6 +158,7 @@ ADD jupyterlab.service /etc/systemd/system/jupyterlab.service
 ADD codeserver.service /etc/systemd/system/codeserver.service
 ADD ray.service /etc/systemd/system/ray.service
 ADD filebrowser.service /etc/systemd/system/filebrowser.service
+ADD gitwebui.service /etc/systemd/system/gitwebui.service
 
 RUN mkdir -p /var/www/ui
 ADD dashboard /var/www/ui
@@ -159,8 +166,11 @@ ADD dashboard /var/www/ui
 RUN systemctl enable /etc/systemd/system/caddy.service
 RUN systemctl enable /etc/systemd/system/bootstrap.service
 RUN systemctl enable docker
+RUN systemctl enable rsyslog
+#https://github.com/j8r/dockerfiles/tree/master/systemd/ubuntu
+#ADD journald.conf /etc/systemd/journald.conf
 
 ADD start.sh /sbin
 RUN chmod u+x /sbin/start.sh
 VOLUME /home
-CMD ["/sbin/init"]
+CMD ["/bin/bash", "-c", "exec /sbin/init --log-target=journal 3>&1"]

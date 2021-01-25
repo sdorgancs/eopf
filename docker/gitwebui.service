@@ -1,0 +1,20 @@
+[Unit]
+Description=Git Web UI
+
+[Service]
+Type=simple
+PassEnvironment=SHELL PATH
+ExecStart=/usr/local/devtools/bin/ungit \
+    --port=9000 \
+    --no-launchBrowser \
+    --authentication=false \
+    --ungitBindIp=0.0.0.0 \
+    --rootPath=/gitwebui \
+    ----forcedLaunchPath=/home/USER/eopf
+ 
+User=USER
+Group=USER
+WorkingDirectory=/home/USER/eopf
+
+[Install]
+WantedBy=multi-user.target

@@ -3,7 +3,11 @@ Description=Jupyter Lab
 
 [Service]
 Type=simple
-ExecStart=/usr/local/devtools/bin/jupyter lab --port 8080 --ip=0.0.0.0 --NotebookApp.authenticate_prometheus=false
+PassEnvironment=SHELL PATH
+ExecStart=/usr/local/devtools/bin/jupyter lab \
+    --no-browser \
+    --port 8080 \
+    --ip=0.0.0.0
 User=USER
 Group=USER
 WorkingDirectory=/home/USER

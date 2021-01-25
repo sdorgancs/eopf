@@ -1,5 +1,5 @@
 c.NotebookApp.base_url = '/notebooks'
-c.NotebookApp.webapp_settings = {'static_url_prefix':'/notebooks/static/'}
+# c.NotebookApp.webapp_settings = {'static_url_prefix':'/notebooks/static/'}
 ## extra paths to look for Javascript notebook extensions
 #  Default: []
 # c.NotebookApp.extra_nbextensions_path = []
@@ -262,6 +262,7 @@ c.NotebookApp.token = ''
 ## Supply overrides for the tornado.web.Application that the Jupyter notebook
 #  uses.
 #  Default: {}
+c.NotebookApp.tornado_settings = {'static_url_prefix':'/notebooks/static/'}
 # c.NotebookApp.tornado_settings = {}
 
 ## Whether to trust or not X-Scheme/X-Forwarded-Proto and X-Real-Ip/X-Forwarded-

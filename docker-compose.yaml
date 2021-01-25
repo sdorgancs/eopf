@@ -2,12 +2,12 @@ version: "3.8"
 services:
   eopdsde:
     build: ./docker
-    shm_size: "1gb"
-    hostname: eopfdev
+    shm_size: "4gb"
+    hostname: eopfsde
     privileged: true
     ports:
       - 80:80
-      - 8265:8265
+      - 9000:9000
     environment:
       - USERNAME=sebastien
       - USERFULLNAME="Sebastien Dorgan"
@@ -20,4 +20,4 @@ services:
       - seccomp:unconfined
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - /tmp/docker:/var/lib/docker
+

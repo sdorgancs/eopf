@@ -51,30 +51,38 @@
                         >
                         JupyterLab
                         </a>
+                         <a 
+                            class="button"
+                            onclick="switch_frame('dashboard')"
+                        >
+                        Dashboard
+                        </a>
+                        <a 
+                            class="button"
+                            onclick="switch_frame('gitwebui')"
+                        >
+                        Git UI
+                        </a>
                         <a 
                             class="button"
                             onclick="switch_frame('browser')"
                         >
                         Browser
                         </a>
-                        <a 
-                            class="button"
-                            onclick="switch_frame('dashboard')"
-                        >
-                        Dashboard
-                        </a>
+
                     </div>
                 </div>
             </div>
         </div>
     </h6>
     <hr style="width:100%;text-align:left;margin:0">
-    <iframe id="code" src="../code/" class="visible"></iframe>
+    <iframe id="code" src="../code/?folder=/home/USER/eopf" class="visible"></iframe>
     <iframe id="notebooks" src="../notebooks/" class="hidden"></iframe>
-    <iframe id="browser" src="../browser" class="hidden"></iframe>
+    <iframe id="browser" src="../browser/" class="hidden"></iframe>
+    <iframe id="gitwebui" src="../gitwebui/#/repository?path=%2Fhome%2FUSER%2Feopf" class="hidden"></iframe>
     <iframe id="dashboard" src="/" class="hidden"></iframe>
      <script type="text/javascript">
-        var elements = ["code", "notebooks", "browser", "dashboard"]
+        var elements = ["code", "notebooks", "browser", "dashboard", "gitwebui"]
         function switch_frame(frame) {
             elements.forEach(f => {
                 elt = document.getElementById(f);

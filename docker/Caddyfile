@@ -18,7 +18,6 @@ localhost:80 {
         reverse_proxy 127.0.0.1:8081
     }
 
-
     route /browser* {
         reverse_proxy 127.0.0.1:8888
     }
@@ -30,6 +29,10 @@ localhost:80 {
 
     route @code_callbacks {
         reverse_proxy 127.0.0.1:8081
+    }
+
+    route /gitwebui* {  
+        reverse_proxy 127.0.0.1:9000
     }
 
 
@@ -50,6 +53,7 @@ localhost:80 {
     redir /notebooks /notebooks/
     redir /dashboard /dashboard/
     redir /ui     /ui/
+    redir /gitwebui     /gitwebui/
 
     header -X-Frame-Options
     header -Content-Security-Policy 
