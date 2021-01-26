@@ -48,6 +48,8 @@ function rename_user {
     echo "conda activate eopf" >> /home/${USERNAME}/.local/user_env.sh
     echo "source /home/${USERNAME}/.local/user_env.sh" >> /home/${USERNAME}/.bashrc
     chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/eopf
+    sudo -u ${USERNAME} bash -c "git config --global user.name \"${USERFULLNAME}\""
+    sudo -u ${USERNAME} bash -c "git config --global user.email \"${USEREMAIL}\""
 }
 
 rename_user

@@ -6,7 +6,7 @@ from traceback import print_exc
 import click
 
 from eopf.algorithms import ProcessingContext
-from eopf.core.computing.pool import DistributedPool, PoolDescription
+from eopf.core.computing.pool import DistributedPool, LocalPool, PoolDescription
 from eopf.core.production.triggering import import_algorithms, registry
 
 
@@ -93,7 +93,7 @@ def run(algorithm, input_file, output_file, resources):
                         pool_desc = PoolDescription.from_json(fr.read(), validate=True)
                         context = ProcessingContext(DistributedPool(**pool_desc.to_dict()), None)
                 else:
-                    context = ProcessingContext(DistributedPool(), None)
+                    context = ProcessingContext(LocalPool(), None)
                 output = algo(context)(param)
                 jsoutout = output.to_json()
                 with open(output_file, "w") as fo:
@@ -116,7 +116,7 @@ def run(algorithm, input_file, output_file, resources):
 if __name__ == "__main__":
     import logging
     import ray
-    ray.init()
+    ray.init("auto", logging_format=logging.CRITICAL)
     logging.basicConfig(filename="eopf_cli.log", level=logging.INFO)
     import_algorithms()
     cli()
