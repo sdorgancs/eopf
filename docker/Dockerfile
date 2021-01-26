@@ -54,7 +54,7 @@ RUN rm -f Miniconda3-latest-Linux-x86_64.sh
 
 # Install code-server 
 RUN curl -fsSL https://code-server.dev/install.sh > install.sh
-RUN sh install.sh --method=standalone --prefix=/usr/local/devtools
+RUN sh install.sh --method=standalone --prefix=/usr/local/devtools --version=3.7.4
 RUN rm -f install.sh
 
 # Install docker
@@ -133,6 +133,14 @@ ADD config /home/eopfdev/.eopf/config
 
 RUN npm install -g ungit
 
+# RUN mkdir /usr/local/devtools/lib/code-server-3.8.0/lib/vscode/resources/web
+
+# RUN curl -L https://raw.githubusercontent.com/cdr/code-server/v3.8.0/lib/vscode/resources/web/callback.html -o \
+#   /usr/local/devtools/lib/code-server-3.8.0/lib/vscode/resources/web/callback.html
+
+# RUN curl -L https://raw.githubusercontent.com/cdr/code-server/v3.8.0/lib/vscode/resources/web/code-web.js -o \
+  # /usr/local/devtools/lib/code-server-3.8.0/lib/vscode/resources/web/code-web.js
+# https://raw.githubusercontent.com/cdr/code-server/v3.8.0/lib/vscode/resources/web/code-web.js
 # Configure services
 USER root
 WORKDIR /

@@ -10,7 +10,7 @@ ExecStart=/usr/local/devtools/bin/code-server \
     --auth=none \
     --disable-telemetry \
     --disable-update-check \
-    --home=/code/ \
+#    --home=/code/ \
     --enable-proposed-api=ms-python.python
 
 User=USER
