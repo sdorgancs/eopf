@@ -116,7 +116,7 @@ def run(algorithm, input_file, output_file, resources):
 if __name__ == "__main__":
     import logging
     import ray
-    ray.init("auto", logging_format=logging.CRITICAL)
+    ray.init("auto", logging_level=logging.CRITICAL)
     logging.basicConfig(filename="eopf_cli.log", level=logging.INFO)
     import_algorithms()
     cli()
