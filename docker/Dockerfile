@@ -115,11 +115,10 @@ RUN code-server --install-extension bungcip.better-toml
 ## yaml
 RUN code-server --install-extension redhat.vscode-yaml
 ## rst
-RUN code-server --install-extension lextudio.restructuredtext
+# RUN code-server --install-extension lextudio.restructuredtext
 
 # # clone eopf
 RUN git clone https://github.com/sdorgancs/eopf.git
-
 
 # Init conda env eopf
 RUN conda env create -f eopf/environment.yml

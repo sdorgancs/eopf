@@ -3,6 +3,7 @@ channels:
   - rapidsai
   - nvidia
   - conda-forge
+  - anaconda
   - defaults
 dependencies:
   - python=3.8.5
@@ -28,6 +29,7 @@ dependencies:
   - pytest
   - sphinx
   - docker-compose
+  - click
   - pip:
     - dataclasses-json
     - dataclasses-jsonschema

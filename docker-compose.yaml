@@ -20,4 +20,5 @@ services:
       - seccomp:unconfined
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ${HOME}/.eopf/docker:/var/lib/docker
 
