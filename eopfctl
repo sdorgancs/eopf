@@ -92,22 +92,20 @@ def run(algorithm, input_file, output_file, resources):
                 input_class = algo.input_class()
                 param = input_class.from_json(fi.read(), validate=True)
                 if resources:
-                    ray.init("auto", logging_level=logging.CRITICAL)
+                    ray.init("auto", logging_level=logging.CRITICAL, configure_logging=True, include_dashboard=False)
                     with open(resources) as fr:
                         pool_desc = PoolDescription.from_json(fr.read(), validate=True)
                         context = ProcessingContext(DistributedPool(**pool_desc.to_dict()), None)
                 else:
-                    print("use local pool")
                     context = ProcessingContext(LocalPool(), None)
 
-                print("run processing unit")
                 output = algo(context)(param)
                 jsoutout = output.to_json()
-                print(jsoutout)
                 with open(output_file, "w") as fo:
                     fo.write(jsoutout)
+                context.pool.close()
                 if ray.is_initialized():
-                    ray.disconnect()
+                    ray.shutdown()
         else:
             print(f"Error: {algorithm} does not exits", file=sys.stderr)
             print(

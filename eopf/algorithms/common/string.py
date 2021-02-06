@@ -202,7 +202,6 @@ class Replace(ProcessingUnit[None, ReplaceInput, ReplaceOutput]):
                     param.oldvalue, param.newvalue, param.maxreplace
                 )
 
-        print(f"{self.context.pool}")
         # parallize the replace tasks using the resource Pool given by the master process
         results = self.context.pool.map(replace, param.strings)
         self.context.logger.debug("Replace ends")

@@ -169,6 +169,7 @@ def load(url: str) -> Dataset:
     else:
         raise NotImplementedError()
 
+
 def extract_dataset_definition(ds: xr.Dataset, fd: TextIO):
     fd.write("# Attributes\n")
     for name in ds.attrs:

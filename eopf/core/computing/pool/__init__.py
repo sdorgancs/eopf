@@ -512,7 +512,8 @@ class DaskAsyncResult(AsyncResult):
 
     def get(self, timeout: Optional[float]) -> _OutputType:
         __doc__ = super().get.__doc__  # noqa: F841
-        return self.future.result(timeout=timeout)
+        res = self.future.result(timeout=timeout)
+        return res
 
     def wait(self, timeout: Optional[float]) -> None:
         __doc__ = super().wait.__doc__  # noqa: F841
@@ -533,7 +534,6 @@ def _safe_call(pool, caller, func, args, kwds):
         func.context.pool = pool
     if caller:
         if args and kwds:
-            print("args/kwds")
             return caller(func, args, kwds)
         else:
             return caller(func, args)
@@ -599,20 +599,26 @@ class LocalPool(LocalPoolAPI):
     def _init(self):
         """Allocate cluster resources
         """
-        # cluster = LocalCluster(n_workers=self.n_cpu, scheduler_port=self._get_port())
-        # convert memory_limit in byte
-        memory_limit = self.memory_limit * 1024 * 1024 * 1024
+        if self.memory_limit > 0:
+            memory_limit = int(self.memory_limit * 1024 * 1024 * 1024)
+        else:
+            memory_limit = None
+        if self.n_cpu == 0:
+            n_cpu = None
+        else:
+            n_cpu = self.n_cpu
+
         if self.n_visible_gpu:
             cluster = LocalCUDACluster(
-                n_workers=self.n_cpu,
-                memory_limit=int(memory_limit),
+                n_workers=n_cpu,
+                memory_limit=memory_limit,
                 dashboard_address=f":{self._get_port()}",
                 CUDA_VISIBLE_DEVICES=self.n_visible_gpu,
             )
         else:
             cluster = DaskLocalClutster(
-                n_workers=self.n_cpu,
-                memory_limit=int(memory_limit),
+                n_workers=n_cpu,
+                memory_limit=memory_limit,
                 dashboard_address=f":{self._get_port()}",
             )
         self.client = Client(cluster)
