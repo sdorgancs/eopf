@@ -13,6 +13,7 @@ dependencies:
   - netcdf4
   - zarr
   - fs
+  - click
   - h5netcdf
   - pyyaml
   - autopep8
